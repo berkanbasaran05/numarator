@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  env: {
+    NEXT_APP_API_URL: "http://localhost:8080",
+  },
   reactStrictMode: true,
 };
 
