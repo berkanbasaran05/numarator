@@ -44,7 +44,7 @@ export default function Home() {
   // Component yüklendiğinde ve her 15 saniyede bir verileri çek
   useEffect(() => {
     fetchOrders(); // İlk yüklemede verileri çek
-    const intervalId = setInterval(fetchOrders, 1500); // 15 saniyede bir çalıştır
+    const intervalId = setInterval(fetchOrders, 15000); // 15 saniyede bir çalıştır
 
     return () => clearInterval(intervalId); // Component unmount olunca interval'i temizle
   }, []);
