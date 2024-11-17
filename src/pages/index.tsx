@@ -5,6 +5,7 @@ export default function Home() {
   const [inputPassword, setInputPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [number, setNumber] = useState(""); // 'number' alanı için state
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal durumu için state
 
   // Türkiye saatine göre şifre hesaplama fonksiyonu
   const calculatePassword = () => {
@@ -51,12 +52,35 @@ export default function Home() {
       if (response.ok) {
         const result = await response.json();
         console.log("POST isteği sonucu:", result);
-        alert("Veri başarıyla gönderildi!");
+        alert("Sipariş numarası başarıyla gönderildi!");
       } else {
         alert("POST isteğinde bir hata oluştu.");
       }
     } catch (error) {
       console.error("POST isteği hatası:", error);
+      alert("Bir hata oluştu.");
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsModalOpen(false); // Modal'ı kapat
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_APP_API_URL}/api/order/delete/AllCustomerOrderNo`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (response.ok) {
+        console.log("Tüm sipariş numaraları temizlendi.");
+        alert("Tüm sipariş numaraları başarıyla temizlendi!");
+      } else {
+        alert("Sipariş numaraları temizlenirken bir hata oluştu.");
+      }
+    } catch (error) {
+      console.error("DELETE isteği hatası:", error);
       alert("Bir hata oluştu.");
     }
   };
@@ -98,7 +122,15 @@ export default function Home() {
           alt="Logo"
         />
       </div>
-      <h1 className="text-2xl font-bold">Sipariş Numarası Gir</h1>
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="text-red-500 mt-4 px-12 py-2 bg-red-100 hover:bg-red-300 rounded"
+      >
+        Sipariş Numaralarını Temizle
+      </button>
+      <div className="flex flex-row items-center space-x-12 mt-8">
+        <h1 className="text-2xl font-bold">Sipariş Numarası Gir</h1>
+      </div>
       <input
         type="text"
         value={number}
@@ -112,6 +144,31 @@ export default function Home() {
       >
         Gönder
       </button>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg items-center flex flex-col shadow-lg">
+            <h2 className="text-xl text-red-500 font-bold mb-4">
+              Emin misiniz? Tüm sipariş numaralarını temizlemek istiyorsunuz.
+            </h2>
+            <div className="flex space-x-4">
+              <button
+                onClick={handleDelete}
+                className="px-6 py-2 bg-green-500 text-white rounded "
+              >
+                Evet
+              </button>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-6 py-2 bg-red-500 rounded "
+              >
+                Hayır
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
