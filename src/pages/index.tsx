@@ -68,7 +68,7 @@ export default function Home() {
       const response = await fetch(
         `${process.env.NEXT_APP_API_URL}/api/order/delete/AllCustomerOrderNo`,
         {
-          method: "POST",
+          method: "DELETE",
           headers: { "Content-Type": "application/json" },
         }
       );
