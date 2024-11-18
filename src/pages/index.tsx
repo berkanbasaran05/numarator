@@ -134,10 +134,17 @@ export default function Home() {
       <input
         type="text"
         value={number}
-        onChange={(e) => setNumber(e.target.value)}
+        onChange={(e) => {
+          const inputValue = e.target.value;
+          // Sadece sayıları kabul et
+          if (/^\d*$/.test(inputValue)) {
+            setNumber(inputValue);
+          }
+        }}
         placeholder="Sipariş Numarası"
         className="mt-4 p-2 text-black border-2 border-green-700 rounded w-1/2"
       />
+
       <button
         onClick={handlePostRequest}
         className="mt-4 px-12 py-2 w-1/2 bg-green-500 text-white rounded"
