@@ -59,7 +59,7 @@ export default function Home() {
           src={"/images/greenlogo.png"}
           alt="Logo"
         />
-        <span className="text-5xl font-bold">Hazır Olan Siparişler</span>
+        <span className="text-5xl  font-bold">HAZIR OLAN SİPARİŞLER</span>
       </div>
       <div className="w-full border border-white bg-white h-2"></div>
 
@@ -67,7 +67,7 @@ export default function Home() {
         {orders.map((order) => (
           <span
             key={order.id}
-            className="text-7xl font-bold p-4 border rounded-xl bg-gray-100 text-black shadow-md"
+            className="text-7xl font-bold p-4 border items-center mx-auto flex w-64 justify-center rounded-xl border-white  text-white shadow-md"
           >
             {order.number}
           </span>
