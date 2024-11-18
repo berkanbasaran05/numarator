@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 
 export default function Home() {
   const [password, setPassword] = useState("");
@@ -34,7 +35,7 @@ export default function Home() {
     if (inputPassword === password) {
       setIsAuthenticated(true);
     } else {
-      alert("Yanlış şifre! Lütfen tekrar deneyin.");
+      toast.error("Yanlış şifre! Lütfen tekrar deneyin.");
     }
   };
 
@@ -52,13 +53,14 @@ export default function Home() {
       if (response.ok) {
         const result = await response.json();
         console.log("POST isteği sonucu:", result);
-        alert("Sipariş numarası başarıyla gönderildi!");
+        toast.success("Sipariş numarası başarıyla gönderildi!");
+        setNumber("");
       } else {
-        alert("POST isteğinde bir hata oluştu.");
+        toast.error("Gönderme isteğinde bir hata oluştu.");
       }
     } catch (error) {
       console.error("POST isteği hatası:", error);
-      alert("Bir hata oluştu.");
+      toast.error("Bir hata oluştu.");
     }
   };
 
@@ -75,13 +77,13 @@ export default function Home() {
 
       if (response.ok) {
         console.log("Tüm sipariş numaraları temizlendi.");
-        alert("Tüm sipariş numaraları başarıyla temizlendi!");
+        toast.success("Tüm sipariş numaraları başarıyla temizlendi!");
       } else {
-        alert("Sipariş numaraları temizlenirken bir hata oluştu.");
+        toast.error("Sipariş numaraları temizlenirken bir hata oluştu.");
       }
     } catch (error) {
-      console.error("DELETE isteği hatası:", error);
-      alert("Bir hata oluştu.");
+      console.error("Silme isteği hatası:", error);
+      toast.error("Bir hata oluştu.");
     }
   };
 
@@ -136,8 +138,8 @@ export default function Home() {
         value={number}
         onChange={(e) => {
           const inputValue = e.target.value;
-          // Sadece sayıları kabul et
-          if (/^\d*$/.test(inputValue)) {
+          // Sadece sayıları ve 5 haneyi kabul et
+          if (/^\d{0,5}$/.test(inputValue)) {
             setNumber(inputValue);
           }
         }}

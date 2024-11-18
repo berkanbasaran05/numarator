@@ -63,7 +63,7 @@ export default function Home() {
       </div>
       <div className="w-full border border-white bg-white h-2"></div>
 
-      <div className="grid grid-cols-3  gap-y-12 gap-x-64 items-center justify-center">
+      <div className="grid grid-cols-4  gap-y-12 gap-x-28 items-center justify-center">
         {orders.map((order) => (
           <span
             key={order.id}
