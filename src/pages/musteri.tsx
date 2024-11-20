@@ -48,7 +48,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchOrders(); // İlk yüklemede verileri çek
-    const intervalId = setInterval(fetchOrders, 15000); // 15 saniyede bir çalıştır
+    const intervalId = setInterval(fetchOrders, 5000); // 5 saniyede bir çalıştır
 
     checkOrientation(); // Yönü kontrol et
     window.addEventListener("resize", checkOrientation); // Ekran boyutları değiştiğinde kontrol et
