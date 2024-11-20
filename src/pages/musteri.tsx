@@ -79,7 +79,7 @@ export default function Home() {
         className={`grid  mx-auto  ${
           isPortrait
             ? "grid-cols-2 gap-y-24 gap-x-44"
-            : "grid-cols-4 gap-y-12 gap-x-28"
+            : "grid-cols-4 gap-y-12 gap-x-24"
         } items-center justify-center`}
       >
         {orders
