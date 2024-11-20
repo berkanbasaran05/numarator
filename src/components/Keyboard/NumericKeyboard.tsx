@@ -12,7 +12,7 @@ const NumericKeyboard: React.FC<NumericKeyboardProps> = ({
   const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
   return (
-    <div className="flex flex-col gap-6   xl:h-[672px] xl:w-[528px] justify-center rounded-3xl shadow-xl shadow-  mx-auto items-center p-4  ">
+    <div className="flex flex-col gap-6 justify-center rounded-3xl shadow-xl shadow-  mx-auto items-center p-4  ">
       <div className="gap-6 flex flex-row">
         {numbers.slice(0, 3).map((number) => (
           <button

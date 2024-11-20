@@ -113,7 +113,7 @@ export default function Home() {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center  overflow-hidden overscroll-y-none justify-center min-h-screen">
         <div className="w-full items-center justify-center h-36 flex flex-row ">
           <img
             className="w-[550px] object-cover"
@@ -121,7 +121,7 @@ export default function Home() {
             alt="Logo"
           />
         </div>
-        <h1 className="text-3xl font-bold mb-8">Şifre Girin</h1>
+        <h1 className="text-3xl font-bold ">Şifre Girin</h1>
         <div className="text-3xl font-semibold mb-4">
           {inputPassword.replace(/./g, "*") || "-"}
         </div>
@@ -131,7 +131,7 @@ export default function Home() {
         />
         <button
           onClick={handleLogin}
-          className="mt-4 px-12 py-2 w-1/2 bg-zinc-100 text-black font-semibold h-20 text-2xl rounded-xl "
+          className="mt-4 px-12 py-2 w-[400px] bg-zinc-100 text-black font-semibold h-16 text-2xl rounded-xl "
         >
           Giriş Yap
         </button>
@@ -149,7 +149,7 @@ export default function Home() {
         />
       </div>
 
-      <div className="flex flex-row items-center space-x-12 mt-8">
+      <div className="flex flex-row items-center space-x-12 mt-4">
         <h1 className="text-2xl font-bold">Sipariş Numarası Gir</h1>
       </div>
       <div className="text-3xl font-semibold">{number || "-"}</div>
@@ -159,7 +159,7 @@ export default function Home() {
       />
       <button
         onClick={handlePostRequest}
-        className="mt-4 px-12 py-2 w-1/2 bg-zinc-100 text-black font-semibold h-20 text-2xl rounded-xl "
+        className="mt-4 px-12 py-2 w-[400px] bg-zinc-100 text-black font-semibold h-16 text-2xl rounded-xl "
       >
         Gönder
       </button>
