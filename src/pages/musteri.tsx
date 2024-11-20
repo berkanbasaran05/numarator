@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import localFont from "next/font/local";
 
 // Fontları tanımlama
@@ -23,7 +22,8 @@ interface Order {
 }
 
 export default function Home() {
-  const [orders, setOrders] = useState<Order[]>([]); // Orders state'i için tip
+  const [orders, setOrders] = useState<Order[]>([]); // Orders state'i
+  const [isPortrait, setIsPortrait] = useState<boolean>(true); // Yön durumu
 
   // Veriyi Fetch Eden Fonksiyon
   const fetchOrders = async (): Promise<void> => {
@@ -41,33 +41,53 @@ export default function Home() {
     }
   };
 
-  // Component yüklendiğinde ve her 15 saniyede bir verileri çek
+  // Yönü Kontrol Etme
+  const checkOrientation = () => {
+    setIsPortrait(window.matchMedia("(orientation: portrait)").matches);
+  };
+
   useEffect(() => {
     fetchOrders(); // İlk yüklemede verileri çek
     const intervalId = setInterval(fetchOrders, 15000); // 15 saniyede bir çalıştır
 
-    return () => clearInterval(intervalId); // Component unmount olunca interval'i temizle
+    checkOrientation(); // Yönü kontrol et
+    window.addEventListener("resize", checkOrientation); // Ekran boyutları değiştiğinde kontrol et
+
+    return () => {
+      clearInterval(intervalId); // Component unmount olunca interval'i temizle
+      window.removeEventListener("resize", checkOrientation);
+    };
   }, []);
 
   return (
     <div
-      className={`${geistSans.variable} ${geistMono.variable} flex flex-col items-center justify-center space-y-8 px-12 font-[family-name:var(--font-geist-sans)]`}
+      className={`${geistSans.variable} ${geistMono.variable} flex flex-col items-center justify-center space-y-12 px-12 font-[family-name:var(--font-geist-sans)]`}
     >
-      <div className="w-full items-center justify-between h-36 flex flex-row ">
+      <div className="w-full items-center justify-between  flex flex-col ">
         <img
-          className="w-[550px] object-cover"
+          className="w-[550px]  h-32 object-cover"
           src={"/images/greenlogo.png"}
           alt="Logo"
         />
-        <span className="text-5xl  font-bold">HAZIR OLAN SİPARİŞLER</span>
+        <span className="text-5xl  whitespace-nowrap font-bold">
+          HAZIR SİPARİŞLER
+        </span>
       </div>
       <div className="w-full border border-white bg-white h-2"></div>
 
-      <div className="grid grid-cols-4  gap-y-12 gap-x-28 items-center justify-center">
+      <div
+        className={`grid   ${
+          isPortrait
+            ? "grid-cols-2 gap-y-40 gap-x-44"
+            : "grid-cols-4 gap-y-12 gap-x-28"
+        } items-center justify-center`}
+      >
         {orders.map((order) => (
           <span
             key={order.id}
-            className="text-7xl font-bold p-4 border items-center mx-auto flex w-64 justify-center rounded-xl border-white  text-white shadow-md"
+            className={` ${
+              isPortrait ? "text-8xl" : "text-6xl"
+            } font-bold p-4 border  items-center mx-auto flex w-64 justify-center rounded-xl border-white text-white shadow-md`}
           >
             {order.number}
           </span>
