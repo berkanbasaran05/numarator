@@ -61,7 +61,7 @@ export default function Home() {
 
   return (
     <div
-      className={`${geistSans.variable} ${geistMono.variable} flex flex-col items-center justify-center space-y-12 px-12 font-[family-name:var(--font-geist-sans)]`}
+      className={`${geistSans.variable} ${geistMono.variable} flex flex-col items-center justify-between space-y-12 px-12 font-[family-name:var(--font-geist-sans)]`}
     >
       <div className="w-full items-center justify-between  flex flex-col ">
         <img
@@ -76,9 +76,9 @@ export default function Home() {
       <div className="w-full border border-white bg-white h-2"></div>
 
       <div
-        className={`grid   ${
+        className={`grid  mx-auto  ${
           isPortrait
-            ? "grid-cols-2 gap-y-40 gap-x-44"
+            ? "grid-cols-2 gap-y-24 gap-x-44"
             : "grid-cols-4 gap-y-12 gap-x-28"
         } items-center justify-center`}
       >
@@ -89,7 +89,7 @@ export default function Home() {
               key={order.id}
               className={` ${
                 isPortrait ? "text-8xl" : "text-6xl"
-              } font-bold p-4 border  items-center mx-auto flex w-64 justify-center rounded-xl border-white text-white shadow-md`}
+              } font-bold p-4 border-2 shadow-gray-100  items-center mx-auto flex w-56 justify-center rounded-xl border-white text-white  shadow-md`}
             >
               {order.number}
             </span>
