@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import NumericKeyboard from "../components/Keyboard/NumericKeyboard";
 
 export default function Home() {
   const [password, setPassword] = useState("");
@@ -36,6 +37,7 @@ export default function Home() {
       setIsAuthenticated(true);
     } else {
       toast.error("Yanlış şifre! Lütfen tekrar deneyin.");
+      setInputPassword(""); // Yanlış girişte şifre alanını sıfırla
     }
   };
 
@@ -87,6 +89,28 @@ export default function Home() {
     }
   };
 
+  // Numeric Keyboard işlevleri (Sipariş Numarası için)
+  const handleNumberKeyPress = (digit: any) => {
+    if (number.length < 5) {
+      setNumber((prev) => prev + digit.toString());
+    }
+  };
+
+  const handleNumberDeleteKey = () => {
+    setNumber((prev) => prev.slice(0, -1));
+  };
+
+  // Numeric Keyboard işlevleri (Şifre için)
+  const handlePasswordKeyPress = (digit: any) => {
+    if (inputPassword.length < 6) {
+      setInputPassword((prev) => prev + digit.toString());
+    }
+  };
+
+  const handlePasswordDeleteKey = () => {
+    setInputPassword((prev) => prev.slice(0, -1));
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
@@ -97,17 +121,17 @@ export default function Home() {
             alt="Logo"
           />
         </div>
-        <h1 className="text-2xl font-bold">Şifre Girin</h1>
-        <input
-          type="password"
-          value={inputPassword}
-          onChange={(e) => setInputPassword(e.target.value)}
-          placeholder="Şifre"
-          className="mt-4 p-2 border rounded text-black w-1/2"
+        <h1 className="text-3xl font-bold mb-8">Şifre Girin</h1>
+        <div className="text-3xl font-semibold mb-4">
+          {inputPassword.replace(/./g, "*") || "-"}
+        </div>
+        <NumericKeyboard
+          onKeyPress={handlePasswordKeyPress}
+          onDelete={handlePasswordDeleteKey}
         />
         <button
           onClick={handleLogin}
-          className="mt-4 px-12 py-2 w-1/2 bg-green-500 text-white rounded"
+          className="mt-4 px-12 py-2 w-1/2 bg-zinc-100 text-black font-semibold h-20 text-2xl rounded-xl "
         >
           Giriş Yap
         </button>
@@ -124,34 +148,28 @@ export default function Home() {
           alt="Logo"
         />
       </div>
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="text-red-500 mt-4 px-12 py-2 bg-red-100 hover:bg-red-300 rounded"
-      >
-        Sipariş Numaralarını Temizle
-      </button>
+
       <div className="flex flex-row items-center space-x-12 mt-8">
         <h1 className="text-2xl font-bold">Sipariş Numarası Gir</h1>
       </div>
-      <input
-        type="text"
-        value={number}
-        onChange={(e) => {
-          const inputValue = e.target.value;
-          // Sadece sayıları ve 5 haneyi kabul et
-          if (/^\d{0,5}$/.test(inputValue)) {
-            setNumber(inputValue);
-          }
-        }}
-        placeholder="Sipariş Numarası"
-        className="mt-4 p-2 text-black border-2 border-green-700 rounded w-1/2"
+      <div className="text-3xl font-semibold">{number || "-"}</div>
+      <NumericKeyboard
+        onKeyPress={handleNumberKeyPress}
+        onDelete={handleNumberDeleteKey}
       />
-
       <button
         onClick={handlePostRequest}
-        className="mt-4 px-12 py-2 w-1/2 bg-green-500 text-white rounded"
+        className="mt-4 px-12 py-2 w-1/2 bg-zinc-100 text-black font-semibold h-20 text-2xl rounded-xl "
       >
         Gönder
+      </button>
+
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="text-red-500 mt-12 px-12 py-2 bg-red-100 flex flex-row items-center gap-4 hover:bg-red-300 rounded"
+      >
+        <img className="w-8 h-8 " src="/images/blacktrash.svg" />
+        Sipariş Numaralarını Temizle
       </button>
 
       {/* Modal */}

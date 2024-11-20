@@ -82,16 +82,18 @@ export default function Home() {
             : "grid-cols-4 gap-y-12 gap-x-28"
         } items-center justify-center`}
       >
-        {orders.map((order) => (
-          <span
-            key={order.id}
-            className={` ${
-              isPortrait ? "text-8xl" : "text-6xl"
-            } font-bold p-4 border  items-center mx-auto flex w-64 justify-center rounded-xl border-white text-white shadow-md`}
-          >
-            {order.number}
-          </span>
-        ))}
+        {orders
+          .sort((a, b) => b.id - a.id)
+          .map((order) => (
+            <span
+              key={order.id}
+              className={` ${
+                isPortrait ? "text-8xl" : "text-6xl"
+              } font-bold p-4 border  items-center mx-auto flex w-64 justify-center rounded-xl border-white text-white shadow-md`}
+            >
+              {order.number}
+            </span>
+          ))}
       </div>
     </div>
   );
