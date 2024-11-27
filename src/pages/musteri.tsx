@@ -65,11 +65,11 @@ export default function Home() {
     >
       <div className="w-full items-center justify-between  flex flex-col ">
         <img
-          className="w-[550px]  h-32 object-cover"
+          className="w-[850px]  h-32 object-cover"
           src={"/images/greenlogo.png"}
           alt="Logo"
         />
-        <span className="text-5xl  whitespace-nowrap font-bold">
+        <span className="text-5xl  w-[850px] items-center text-center whitespace-nowrap font-bold">
           HAZIR SİPARİŞLER
         </span>
       </div>
@@ -79,7 +79,7 @@ export default function Home() {
         className={`grid  mx-auto  ${
           isPortrait
             ? "grid-cols-2 gap-y-24 gap-x-44"
-            : "grid-cols-4 gap-y-12 gap-x-20"
+            : "grid-cols-4 gap-y-12 gap-x-32"
         } items-center justify-center`}
       >
         {orders
@@ -88,8 +88,8 @@ export default function Home() {
             <span
               key={order.id}
               className={` ${
-                isPortrait ? "text-8xl" : "text-6xl"
-              } font-bold p-4 border-2 shadow-gray-100  items-center mx-auto flex w-56 justify-center rounded-xl border-white text-white  shadow-md`}
+                isPortrait ? "text-9xl" : "text-8xl"
+              }  font-extrabold p-4 border-2   items-center mx-auto flex w-64 justify-center rounded-xl border-gray-600 text-white  shadow-md`}
             >
               {order.number}
             </span>
