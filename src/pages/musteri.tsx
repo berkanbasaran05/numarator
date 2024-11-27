@@ -69,7 +69,7 @@ export default function Home() {
           src={"/images/greenlogo.png"}
           alt="Logo"
         />
-        <span className="text-5xl  w-[850px] items-center text-center whitespace-nowrap font-bold">
+        <span className="text-8xl  w-[850px] items-center text-center whitespace-nowrap font-bold">
           HAZIR SİPARİŞLER
         </span>
       </div>
