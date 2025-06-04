@@ -151,11 +151,11 @@ export default function Home() {
                              : "neon-text-COMPLETED"
                          }`}
             >
-              <div className="number-animation mb-3 mr-8 ">
+              <div className="number-animation mb-8 mr-[50px] ">
                 {notification.order.number.split("").map((digit, index) => (
                   <span
                     key={index}
-                    className="text-3xl font-bold"
+                    className="text-2xl font-bold"
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     {digit}
@@ -173,7 +173,7 @@ export default function Home() {
               }`}
             >
               {notification.order.status === "PAYED"
-                ? "Yeni Sipariş"
+                ? "Sipariş Hazırlanıyor"
                 : "Sipariş Hazır"}
             </h2>
             <p
@@ -187,14 +187,14 @@ export default function Home() {
                 {notification.order.number.split("").map((digit, index) => (
                   <span
                     key={index}
-                    className="text-7xl font-bold"
+                    className="text-9xl font-bold"
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     {digit}
                   </span>
                 ))}
               </span>
-              <span className="text-2xl font-bold">Sipariş Numarası</span>
+              <span className="text-3xl font-bold">Sipariş Numarası</span>
             </p>
           </div>
         </div>
