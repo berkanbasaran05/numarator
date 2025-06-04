@@ -55,6 +55,22 @@ const initialDummyOrders: Order[] = [
     status: "ready",
     companyId: 1,
   },
+  {
+    id: 3,
+    createdAt: "2024-03-20T10:35:00Z",
+    updatedAt: "2024-03-20T10:35:00Z",
+    number: "456",
+    status: "ready",
+    companyId: 1,
+  },
+  {
+    id: 4,
+    createdAt: "2024-03-20T10:35:00Z",
+    updatedAt: "2024-03-20T10:35:00Z",
+    number: "456",
+    status: "ready",
+    companyId: 1,
+  },
 ];
 
 // Yeni sipariş simülasyonu için dummy veriler
@@ -305,18 +321,18 @@ export default function Home() {
         />
       </div>
 
-      <div className="w-full h-[calc(100vh-120px)] flex flex-col lg:flex-row gap-4 lg:gap-8">
+      <div className="w-full h-screen flex flex-col  justify-between lg:flex-row gap-4 lg:gap-8">
         <div
-          className="w-full flex flex-col gap-2 sm:gap-4 px-2 sm:px-4 md:px-6 lg:px-8 slide-in"
+          className="w-full    h-1/2 flex flex-col gap-2 sm:gap-4 px-2 sm:px-4 md:px-6 lg:px-8 slide-in"
           style={{ animationDelay: "0.2s" }}
         >
-          <span className="text-4xl sm:text-5xl lg:text-6xl text-black text-center font-bold pointer-events-none">
+          <span className="text-4xl sm:text-5xl lg:text-6xl text-[#02212B] text-center font-bold pointer-events-none">
             Hazırlanıyor
           </span>
           <div className="w-full border border-black bg-black h-1 sm:h-2"></div>
           <div
-            className={`grid w-full h-full mx-auto gap-4 sm:gap-6 md:gap-5 
-              auto-rows-min grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 
+            className={`grid w-full  mx-auto gap-4 sm:gap-6 md:gap-5 
+              auto-rows-min grid-cols-1 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-4 
               justify-items-center content-start overflow-y-auto`}
           >
             {orders
@@ -328,8 +344,8 @@ export default function Home() {
                   className={`text-4xl sm:text-5xl lg:text-6xl xl:text-6xl
                     font-extrabold p-2 sm:p-3 md:p-4 
                     border-2 items-center flex justify-center 
-                    w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[160px] md:h-[160px]
-                    rounded-xl border-gray-600 text-black shadow-md
+                    w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[130px] md:h-[130px]
+                    rounded-xl border-gray-600 text-[#02212B] shadow-md
                     pointer-events-none select-none order-card slide-in
                     ${isNewOrder(order) ? "new-order-preparing" : ""}`}
                   style={{ animationDelay: `${index * 0.1}s` }}
@@ -341,16 +357,16 @@ export default function Home() {
         </div>
 
         <div
-          className="w-full flex flex-col gap-2 sm:gap-4 px-2 sm:px-4 md:px-6 lg:px-8 slide-in"
+          className="w-full h-1/2 flex flex-col gap-2 sm:gap-4 px-2 sm:px-4 md:px-6 lg:px-8 slide-in"
           style={{ animationDelay: "0.4s" }}
         >
-          <span className="text-4xl sm:text-5xl lg:text-6xl text-black text-center font-bold pointer-events-none">
+          <span className="text-4xl sm:text-5xl lg:text-6xl text-brand-yellow-primary text-center font-bold pointer-events-none">
             Hazırlandı
           </span>
-          <div className="w-full border border-black bg-black h-1 sm:h-2"></div>
+          <div className="w-full border border-brand-yellow-primary bg-brand-yellow-primary h-1 sm:h-2"></div>
           <div
-            className={`grid w-full h-full mx-auto gap-4 sm:gap-6 md:gap-5 
-              auto-rows-min grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 
+            className={`grid w-full  mx-auto gap-4 sm:gap-6 md:gap-5 
+              auto-rows-min grid-cols-1 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 
               justify-items-center content-start overflow-y-auto`}
           >
             {orders
@@ -362,8 +378,8 @@ export default function Home() {
                   className={`text-4xl sm:text-5xl lg:text-6xl xl:text-6xl
                     font-extrabold p-2 sm:p-3 md:p-4 
                     border-2 items-center flex justify-center 
-                    w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[160px] md:h-[160px]
-                    rounded-xl border-gray-600 text-black shadow-md
+                    w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[130px] md:h-[130px]
+                    rounded-xl border-brand-yellow-primary text-brand-yellow-primary shadow-md
                     pointer-events-none select-none order-card slide-in
                     ${isNewOrder(order) ? "new-order-ready" : ""}`}
                   style={{ animationDelay: `${index * 0.1}s` }}
