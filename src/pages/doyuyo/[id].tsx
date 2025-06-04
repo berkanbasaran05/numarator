@@ -71,6 +71,8 @@ export default function Home() {
 
   useEffect(() => {
     fetchOrders();
+    const interval = setInterval(fetchOrders, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   // --- SOCKET.IO ---
@@ -203,7 +205,7 @@ export default function Home() {
   return (
     <div
       className={`${geistSans.variable} ${geistMono.variable} ${nunito.variable} 
-        bg-white min-h-screen h-screen w-screen overflow-hidden select-none
+        bg-brand-blue-primary min-h-screen h-screen w-screen overflow-hidden select-none
         flex flex-col items-center space-y-2 sm:space-y-4 p-2 sm:p-4 md:p-8 lg:p-12 
         font-[family-name:var(--font-nunito)]`}
     >
