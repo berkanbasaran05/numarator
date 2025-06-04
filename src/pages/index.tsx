@@ -48,7 +48,7 @@ export default function Home() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ number }), // 'number' alanı gönderiliyor
+          body: JSON.stringify({ number, branchId: 1 }), // 'number' alanı gönderiliyor
         }
       );
 
@@ -70,9 +70,9 @@ export default function Home() {
     setIsModalOpen(false); // Modal'ı kapat
     try {
       const response = await fetch(
-        `${process.env.NEXT_APP_API_URL}/api/order/delete/AllCustomerOrderNo`,
+        `${process.env.NEXT_APP_API_URL}/invisibleAllCustomerOrderNo/1`,
         {
-          method: "DELETE",
+          method: "PATCH",
           headers: { "Content-Type": "application/json" },
         }
       );

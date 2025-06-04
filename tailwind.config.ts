@@ -21,7 +21,7 @@ export default {
             primary: "#7258DB",
           },
           blue: {
-            primary: "#0047FF",
+            primary: "#153542",
             primaryLight: "#EEF3FF",
           },
           palette: {

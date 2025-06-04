@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import localFont from "next/font/local";
 import { Nunito } from "next/font/google";
+import { io, Socket } from "socket.io-client";
 import Confetti from "react-confetti";
 
 // Fontları tanımlama
@@ -30,6 +31,7 @@ interface Order {
   number: string;
   status: string;
   companyId?: number;
+  visible?: boolean;
 }
 
 interface NewOrderNotification {
@@ -37,103 +39,73 @@ interface NewOrderNotification {
   order: Order | null;
 }
 
-// Test için dummy veriler
-const initialDummyOrders: Order[] = [
-  {
-    id: 1,
-    createdAt: "2024-03-20T10:30:00Z",
-    updatedAt: "2024-03-20T10:30:00Z",
-    number: "123",
-    status: "preparing",
-    companyId: 1,
-  },
-  {
-    id: 2,
-    createdAt: "2024-03-20T10:35:00Z",
-    updatedAt: "2024-03-20T10:35:00Z",
-    number: "456",
-    status: "ready",
-    companyId: 1,
-  },
-  {
-    id: 3,
-    createdAt: "2024-03-20T10:35:00Z",
-    updatedAt: "2024-03-20T10:35:00Z",
-    number: "456",
-    status: "ready",
-    companyId: 1,
-  },
-  {
-    id: 4,
-    createdAt: "2024-03-20T10:35:00Z",
-    updatedAt: "2024-03-20T10:35:00Z",
-    number: "456",
-    status: "ready",
-    companyId: 1,
-  },
-];
-
-// Yeni sipariş simülasyonu için dummy veriler
-const newOrdersDummy: Order[] = [
-  {
-    id: 3,
-    createdAt: "2024-03-20T10:40:00Z",
-    updatedAt: "2024-03-20T10:40:00Z",
-    number: "789",
-    status: "preparing",
-    companyId: 1,
-  },
-  {
-    id: 4,
-    createdAt: "2024-03-20T10:45:00Z",
-    updatedAt: "2024-03-20T10:45:00Z",
-    number: "321",
-    status: "ready",
-    companyId: 1,
-  },
-];
-
 export default function Home() {
-  const [orders, setOrders] = useState<Order[]>(initialDummyOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [prevOrders, setPrevOrders] = useState<Order[]>([]);
   const [notification, setNotification] = useState<NewOrderNotification>({
     isVisible: false,
     order: null,
   });
-  const [currentOrderIndex, setCurrentOrderIndex] = useState(0);
-  const [isPortrait, setIsPortrait] = useState<boolean>(true); // Yön durumu
+  const [isPortrait, setIsPortrait] = useState<boolean>(true);
 
-  // Test için yeni sipariş ekleme fonksiyonu
-  const addNewOrder = () => {
-    if (currentOrderIndex < newOrdersDummy.length) {
-      const newOrder = newOrdersDummy[currentOrderIndex];
-      setNotification({
-        isVisible: true,
-        order: newOrder,
-      });
+  // İlk yüklemede API'den siparişleri çek
 
-      // 5 saniye sonra bildirimi kapat
-      setTimeout(() => {
-        setNotification({
-          isVisible: false,
-          order: null,
-        });
-      }, 5000);
-
-      // Siparişi listeye ekle
-      setPrevOrders(orders);
-      setOrders((prev) => [...prev, newOrder]);
-      setCurrentOrderIndex((prev) => prev + 1);
+  const fetchOrders = async () => {
+    try {
+      const pathParts = window.location.pathname.split("/");
+      const branchId = pathParts[pathParts.length - 1];
+      const response = await fetch(
+        `${process.env.NEXT_APP_API_URL}/api/customerScreen/branch/${branchId}`
+      );
+      if (!response.ok) throw new Error("Veriler alınırken bir hata oluştu.");
+      const data: Order[] = await response.json();
+      console.log(data);
+      // Sadece visible olanları al
+      const visibleOrders = data.filter((order) => order.visible !== false);
+      setOrders(visibleOrders);
+      setPrevOrders(visibleOrders);
+    } catch (error) {
+      console.error("Hata:", error);
     }
   };
 
-  // Veriyi Fetch Eden Fonksiyon
-  const fetchOrders = async (): Promise<void> => {
-    // Test için gerçek API çağrısını simüle ediyoruz
-    addNewOrder();
-  };
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
-  // Yeni sipariş kontrolü
+  // --- SOCKET.IO ---
+  useEffect(() => {
+    // URL'den branchId'yi al
+    const pathParts = window.location.pathname.split("/");
+    const branchId = pathParts[pathParts.length - 1];
+    const key = process.env.NEXT_PUBLIC_CUSTOMERSCREEN_SOCKET_KEY;
+    if (!branchId || !key) return;
+    const socket: Socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!, {
+      auth: { branchId, key },
+      transports: ["websocket"],
+    });
+    socket.on("connect", () => {
+      console.log("Müşteri ekranı socket bağlı!");
+    });
+    socket.on("newOrder", (order: Order) => {
+      // Sadece visible ise ekle
+      if (order.visible === false) return;
+      setNotification({ isVisible: true, order });
+
+      setTimeout(() => {
+        setNotification({ isVisible: false, order: null });
+      }, 5000);
+      setPrevOrders(orders);
+      setOrders((prev) => [...prev, order]);
+      fetchOrders();
+    });
+    return () => {
+      socket.disconnect();
+    };
+    // eslint-disable-next-line
+  }, []);
+
+  // Yeni sipariş kontrolü (grid animasyonu için)
   const isNewOrder = (order: Order) => {
     return !prevOrders.find((prevOrder) => prevOrder.id === order.id);
   };
@@ -144,21 +116,18 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const intervalId = setInterval(fetchOrders, 8000); // 8 saniyede bir yeni sipariş ekle
-
     checkOrientation(); // Yönü kontrol et
     window.addEventListener("resize", checkOrientation); // Ekran boyutları değiştiğinde kontrol et
 
     return () => {
-      clearInterval(intervalId);
       window.removeEventListener("resize", checkOrientation);
     };
-  }, [currentOrderIndex]);
+  }, []);
 
   if (notification.isVisible && notification.order) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-90 z-50">
-        {notification.order.status === "preparing" && <Confetti />}
+      <div className="fixed inset-0 flex items-center justify-center bg-brand-blue-primary bg-opacity-90 z-50">
+        {notification.order.status === "PAYED" && <Confetti />}
         <div className="relative w-[800px] flex flex-col items-center space-y-8">
           <img
             src="/images/colored.svg"
@@ -175,15 +144,16 @@ export default function Home() {
               className={`absolute top-1/2 left-[540px] transform -translate-x-1/2 -translate-y-1/2
                          text-3xl font-extrabold text-white rotate-[-7deg]
                          ${
-                           notification.order.status === "preparing"
-                             ? "neon-text-preparing"
-                             : "neon-text-ready"
+                           notification.order.status === "PAYED"
+                             ? "neon-text-PAYED"
+                             : "neon-text-COMPLETED"
                          }`}
             >
-              <div className="number-animation">
+              <div className="number-animation mb-2">
                 {notification.order.number.split("").map((digit, index) => (
                   <span
                     key={index}
+                    className="text-3xl font-bold"
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     {digit}
@@ -192,36 +162,37 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="text-white text-center space-y-4">
+          <div className="text-white text-center flex flex-col space-y-4">
             <h2
               className={`text-5xl font-bold ${
-                notification.order.status === "preparing"
-                  ? "neon-text-preparing"
-                  : "neon-text-ready"
+                notification.order.status === "PAYED"
+                  ? "neon-text-PAYED"
+                  : "neon-text-COMPLETED"
               }`}
             >
-              {notification.order.status === "preparing"
+              {notification.order.status === "PAYED"
                 ? "Yeni Sipariş"
                 : "Sipariş Hazır"}
             </h2>
             <p
-              className={`text-3xl ${
-                notification.order.status === "preparing"
-                  ? "neon-text-preparing"
-                  : "neon-text-ready"
+              className={`text-5xl font-semibold flex flex-col ${
+                notification.order.status === "PAYED"
+                  ? "neon-text-PAYED"
+                  : "neon-text-COMPLETED"
               }`}
             >
-              Sipariş Numarası:
               <span className="number-animation ml-2">
                 {notification.order.number.split("").map((digit, index) => (
                   <span
                     key={index}
+                    className="text-7xl font-bold"
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     {digit}
                   </span>
                 ))}
               </span>
+              <span className="text-2xl font-bold">Sipariş Numarası</span>
             </p>
           </div>
         </div>
@@ -232,38 +203,50 @@ export default function Home() {
   return (
     <div
       className={`${geistSans.variable} ${geistMono.variable} ${nunito.variable} 
-        bg-white min-h-screen w-screen overflow-hidden select-none
+        bg-white min-h-screen h-screen w-screen overflow-hidden select-none
         flex flex-col items-center space-y-2 sm:space-y-4 p-2 sm:p-4 md:p-8 lg:p-12 
         font-[family-name:var(--font-nunito)]`}
     >
       <style jsx>{`
-        @keyframes neonGlowPreparing {
+        @keyframes neonGlowPAYED {
           0% {
             text-shadow: 0 0 10px rgba(245, 158, 11, 0.7),
               0 0 20px rgba(245, 158, 11, 0.5), 0 0 30px rgba(245, 158, 11, 0.3);
+            box-shadow: 0 0 0px 0px #f59e0b;
+            border-color: #ec3b19;
           }
           50% {
             text-shadow: 0 0 20px rgba(245, 158, 11, 0.9),
               0 0 40px rgba(245, 158, 11, 0.7), 0 0 60px rgba(245, 158, 11, 0.5);
+            box-shadow: 0 0 32px 8px #f59e0b;
+            border-color: #f59e0b;
           }
           100% {
             text-shadow: 0 0 10px rgba(245, 158, 11, 0.7),
               0 0 20px rgba(245, 158, 11, 0.5), 0 0 30px rgba(245, 158, 11, 0.3);
+            box-shadow: 0 0 0px 0px #f59e0b;
+            border-color: #ec3b19;
           }
         }
 
-        @keyframes neonGlowReady {
+        @keyframes neonGlowCOMPLETED {
           0% {
             text-shadow: 0 0 10px rgba(16, 185, 129, 0.7),
               0 0 20px rgba(16, 185, 129, 0.5), 0 0 30px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 0 0px 0px #10b981;
+            border-color: #10b981;
           }
           50% {
             text-shadow: 0 0 20px rgba(16, 185, 129, 0.9),
               0 0 40px rgba(16, 185, 129, 0.7), 0 0 60px rgba(16, 185, 129, 0.5);
+            box-shadow: 0 0 32px 8px #10b981;
+            border-color: #10b981;
           }
           100% {
             text-shadow: 0 0 10px rgba(16, 185, 129, 0.7),
               0 0 20px rgba(16, 185, 129, 0.5), 0 0 30px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 0 0px 0px #10b981;
+            border-color: #10b981;
           }
         }
 
@@ -290,13 +273,22 @@ export default function Home() {
           animation: numberAppear 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
 
-        .neon-text-preparing {
-          animation: neonGlowPreparing 2s ease-in-out infinite;
+        .neon-text-PAYED {
+          animation: neonGlowPAYED 2s ease-in-out infinite;
           animation-duration: 10s;
         }
 
-        .neon-text-ready {
-          animation: neonGlowReady 2s ease-in-out infinite;
+        .neon-text-COMPLETED {
+          animation: neonGlowCOMPLETED 2s ease-in-out infinite;
+          animation-duration: 10s;
+        }
+
+        .new-order-PAYED {
+          animation: neonGlowPAYED 2s ease-in-out infinite;
+          animation-duration: 10s;
+        }
+        .new-order-COMPLETED {
+          animation: neonGlowCOMPLETED 2s ease-in-out infinite;
           animation-duration: 10s;
         }
 
@@ -305,7 +297,7 @@ export default function Home() {
           transition: all 0.3s ease;
         }
 
-        .order-card:not(.new-order-preparing):not(.new-order-ready):hover {
+        .order-card:not(.new-order-PAYED):not(.new-order-COMPLETED):hover {
           transform: translateY(-2px);
           box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
             0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -321,22 +313,23 @@ export default function Home() {
         />
       </div>
 
-      <div className="w-full h-screen flex flex-col  justify-between lg:flex-row gap-4 lg:gap-8">
+      <div className="w-full h-full overflow-hidden flex flex-col  justify-between lg:flex-row gap-4 lg:gap-8">
         <div
           className="w-full    h-1/2 flex flex-col gap-2 sm:gap-4 px-2 sm:px-4 md:px-6 lg:px-8 slide-in"
           style={{ animationDelay: "0.2s" }}
         >
-          <span className="text-4xl sm:text-5xl lg:text-6xl text-[#02212B] text-center font-bold pointer-events-none">
+          <div className="w-full border border-[#EC3B19] bg-[#EC3B19] h-1 sm:h-2"></div>
+          <span className="text-4xl sm:text-5xl lg:text-6xl text-[#EC3B19] text-center font-bold pointer-events-none">
             Hazırlanıyor
           </span>
-          <div className="w-full border border-black bg-black h-1 sm:h-2"></div>
+
           <div
-            className={`grid w-full  mx-auto gap-4 sm:gap-6 md:gap-5 
+            className={`grid w-full  mx-auto gap-4 sm:gap-6 md:gap-1 
               auto-rows-min grid-cols-1 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-4 
               justify-items-center content-start overflow-y-auto`}
           >
             {orders
-              .filter((order) => order.status === "preparing")
+              .filter((order) => order.status === "PAYED")
               .sort((a, b) => b.id - a.id)
               .map((order, index) => (
                 <span
@@ -345,9 +338,9 @@ export default function Home() {
                     font-extrabold p-2 sm:p-3 md:p-4 
                     border-2 items-center flex justify-center 
                     w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[130px] md:h-[130px]
-                    rounded-xl border-gray-600 text-[#02212B] shadow-md
+                    rounded-xl border-[#EC3B19] text-[#EC3B19] shadow-md
                     pointer-events-none select-none order-card slide-in
-                    ${isNewOrder(order) ? "new-order-preparing" : ""}`}
+                    ${isNewOrder(order) ? "new-order-PAYED" : ""}`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {order.number}
@@ -360,17 +353,18 @@ export default function Home() {
           className="w-full h-1/2 flex flex-col gap-2 sm:gap-4 px-2 sm:px-4 md:px-6 lg:px-8 slide-in"
           style={{ animationDelay: "0.4s" }}
         >
+          <div className="w-full border border-brand-yellow-primary bg-brand-yellow-primary h-1 sm:h-2"></div>
           <span className="text-4xl sm:text-5xl lg:text-6xl text-brand-yellow-primary text-center font-bold pointer-events-none">
             Hazırlandı
           </span>
-          <div className="w-full border border-brand-yellow-primary bg-brand-yellow-primary h-1 sm:h-2"></div>
+
           <div
-            className={`grid w-full  mx-auto gap-4 sm:gap-6 md:gap-5 
+            className={`grid w-full  mx-auto gap-4 sm:gap-6 md:gap-1 
               auto-rows-min grid-cols-1 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 
               justify-items-center content-start overflow-y-auto`}
           >
             {orders
-              .filter((order) => order.status === "ready")
+              .filter((order) => order.status === "COMPLETED")
               .sort((a, b) => b.id - a.id)
               .map((order, index) => (
                 <span
@@ -381,7 +375,7 @@ export default function Home() {
                     w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[130px] md:h-[130px]
                     rounded-xl border-brand-yellow-primary text-brand-yellow-primary shadow-md
                     pointer-events-none select-none order-card slide-in
-                    ${isNewOrder(order) ? "new-order-ready" : ""}`}
+                    ${isNewOrder(order) ? "new-order-COMPLETED" : ""}`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {order.number}

@@ -19,6 +19,7 @@ interface Order {
   updatedAt: string;
   id: number;
   number: string;
+  visible: boolean;
 }
 
 export default function Home() {
@@ -29,7 +30,7 @@ export default function Home() {
   const fetchOrders = async (): Promise<void> => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_APP_API_URL}/api/order/getAllCustomerOrderNo`
+        `${process.env.NEXT_APP_API_URL}/api/customerScreen/branch/1`
       ); // API endpoint'inizi burada belirtin
       if (!response.ok) {
         throw new Error("Veriler alınırken bir hata oluştu.");
@@ -84,6 +85,7 @@ export default function Home() {
       >
         {orders
           .sort((a, b) => b.id - a.id)
+          .filter((order) => order.visible !== false)
           .map((order) => (
             <span
               key={order.id}
