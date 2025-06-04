@@ -48,6 +48,7 @@ export default function Home() {
   });
   const [notificationQueue, setNotificationQueue] = useState<Order[]>([]);
   const [isPortrait, setIsPortrait] = useState<boolean>(true);
+  const [isSocketConnected, setIsSocketConnected] = useState<boolean>(true);
 
   // İlk yüklemede API'den siparişleri çek
 
@@ -98,9 +99,23 @@ export default function Home() {
     const socket: Socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!, {
       auth: { branchId, key },
       transports: ["websocket"],
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 2000,
     });
     socket.on("connect", () => {
+      setIsSocketConnected(true);
       console.log("Müşteri ekranı socket bağlı!");
+    });
+    socket.on("disconnect", () => {
+      setIsSocketConnected(false);
+      console.warn("Socket bağlantısı koptu, tekrar bağlanıyor...");
+    });
+    socket.on("reconnect_attempt", () => {
+      setIsSocketConnected(false);
+    });
+    socket.on("reconnect", () => {
+      setIsSocketConnected(true);
     });
     socket.on("newOrder", (order: Order) => {
       if (order.visible === false) return;
@@ -159,7 +174,7 @@ export default function Home() {
                              : "neon-text-COMPLETED"
                          }`}
             >
-              <div className="number-animation mb-8 mr-[50px] ">
+              <div className="number-animation mb-[50px] mr-[70px] ">
                 {notification.order.number.split("").map((digit, index) => (
                   <span
                     key={index}
@@ -394,6 +409,12 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {!isSocketConnected && (
+        <div className="fixed top-0 left-0 w-full bg-red-600 text-white text-center py-2 z-[100] font-bold animate-pulse">
+          Sunucu ile bağlantı kurulamadı. Tekrar bağlanıyor...
+        </div>
+      )}
     </div>
   );
 }
