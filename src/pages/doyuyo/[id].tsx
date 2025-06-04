@@ -46,6 +46,7 @@ export default function Home() {
     isVisible: false,
     order: null,
   });
+  const [notificationQueue, setNotificationQueue] = useState<Order[]>([]);
   const [isPortrait, setIsPortrait] = useState<boolean>(true);
 
   // İlk yüklemede API'den siparişleri çek
@@ -75,6 +76,18 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  // Kuyruktan sıradaki bildirimi göster
+  useEffect(() => {
+    if (!notification.isVisible && notificationQueue.length > 0) {
+      const nextOrder = notificationQueue[0];
+      setNotification({ isVisible: true, order: nextOrder });
+      setNotificationQueue((q) => q.slice(1));
+      setTimeout(() => {
+        setNotification({ isVisible: false, order: null });
+      }, 5000);
+    }
+  }, [notification.isVisible, notificationQueue]);
+
   // --- SOCKET.IO ---
   useEffect(() => {
     // URL'den branchId'yi al
@@ -90,13 +103,8 @@ export default function Home() {
       console.log("Müşteri ekranı socket bağlı!");
     });
     socket.on("newOrder", (order: Order) => {
-      // Sadece visible ise ekle
       if (order.visible === false) return;
-      setNotification({ isVisible: true, order });
-
-      setTimeout(() => {
-        setNotification({ isVisible: false, order: null });
-      }, 5000);
+      setNotificationQueue((q) => [...q, order]);
       setPrevOrders(orders);
       setOrders((prev) => [...prev, order]);
       fetchOrders();
