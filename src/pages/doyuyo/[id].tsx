@@ -350,7 +350,7 @@ export default function Home() {
 
           <div
             className={`grid w-full  mx-auto gap-4 sm:gap-6 md:gap-1 
-              auto-rows-min grid-cols-1 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-4 
+              auto-rows-min grid-cols-1 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 
               justify-items-center content-start overflow-y-auto`}
           >
             {orders
