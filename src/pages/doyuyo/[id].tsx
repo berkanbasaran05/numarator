@@ -362,7 +362,7 @@ export default function Home() {
                   className={`text-4xl sm:text-5xl lg:text-6xl xl:text-6xl
                     font-extrabold p-2 sm:p-3 md:p-4 
                     border-2 items-center flex justify-center 
-                    w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[130px] md:h-[130px]
+                    w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[130px] md:h-[100px]
                     rounded-xl border-[#EC3B19] text-[#EC3B19] shadow-md
                     pointer-events-none select-none order-card slide-in
                     ${isNewOrder(order) ? "new-order-PAYED" : ""}`}
@@ -397,7 +397,7 @@ export default function Home() {
                   className={`text-4xl sm:text-5xl lg:text-6xl xl:text-6xl
                     font-extrabold p-2 sm:p-3 md:p-4 
                     border-2 items-center flex justify-center 
-                    w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[130px] md:h-[130px]
+                    w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[130px] md:h-[100px]
                     rounded-xl border-brand-yellow-primary text-brand-yellow-primary shadow-md
                     pointer-events-none select-none order-card slide-in
                     ${isNewOrder(order) ? "new-order-COMPLETED" : ""}`}
