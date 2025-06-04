@@ -151,7 +151,7 @@ export default function Home() {
                              : "neon-text-COMPLETED"
                          }`}
             >
-              <div className="number-animation mb-2">
+              <div className="number-animation mb-3 mr-8 ">
                 {notification.order.number.split("").map((digit, index) => (
                   <span
                     key={index}
@@ -315,7 +315,7 @@ export default function Home() {
         />
       </div>
 
-      <div className="w-full h-full overflow-hidden flex flex-col  justify-between lg:flex-row gap-4 lg:gap-8">
+      <div className="w-full h-full overflow-hidden flex flex-col  justify-between lg:flex-col gap-4 lg:gap-8">
         <div
           className="w-full    h-1/2 flex flex-col gap-2 sm:gap-4 px-2 sm:px-4 md:px-6 lg:px-8 slide-in"
           style={{ animationDelay: "0.2s" }}
