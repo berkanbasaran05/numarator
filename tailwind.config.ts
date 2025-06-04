@@ -43,7 +43,7 @@ export default {
             secondary: "#F572B1",
           },
           yellow: {
-            primary: "#fec700",
+            primary: "#F8AA21",
             secondary: "#e63513",
           },
           gold: {
