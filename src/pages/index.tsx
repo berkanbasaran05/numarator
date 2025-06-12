@@ -70,7 +70,7 @@ export default function Home() {
     setIsModalOpen(false); // Modal'ı kapat
     try {
       const response = await fetch(
-        `${process.env.NEXT_APP_API_URL}/customerscreen/invisibleAllCustomerOrderNo/1`,
+        `${process.env.NEXT_APP_API_URL}/api/customerscreen/invisibleAllCustomerOrderNo/1`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

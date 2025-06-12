@@ -351,19 +351,27 @@ export default function Home() {
           <div
             className={`grid w-full  mx-auto gap-4 sm:gap-6 md:gap-1 
               auto-rows-min grid-cols-1 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 
-              justify-items-center content-start overflow-y-auto`}
+              justify-items-center content-start overflow-hidden overscroll-none`}
           >
             {orders
-              .filter((order) => order.status === "PAYED")
+              .filter((order) => {
+                if (order.status !== "PAYED") return false;
+                // 30 dakika kontrolü
+                const createdAt = new Date(order.createdAt);
+                const now = new Date();
+                const diffMinutes =
+                  (now.getTime() - createdAt.getTime()) / 1000 / 60;
+                return diffMinutes <= 30;
+              })
               .sort((a, b) => b.id - a.id)
               .map((order, index) => (
                 <span
                   key={order.id}
                   className={`text-4xl sm:text-5xl lg:text-6xl xl:text-6xl
-                    font-extrabold p-2 sm:p-3 md:p-4 
+                    font-extrabold p-1 sm:p-3 md:p-4 
                     border-2 items-center flex justify-center 
-                    w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[130px] md:h-[100px]
-                    rounded-xl border-[#EC3B19] text-[#EC3B19] shadow-md
+                    w-[120px] h-[120px] sm:w-[140px] sm:h-[110px] md:w-[130px] md:h-[100px]
+                    rounded-xl border-[#EC3B19] text-white shadow-md
                     pointer-events-none select-none order-card slide-in
                     ${isNewOrder(order) ? "new-order-PAYED" : ""}`}
                   style={{ animationDelay: `${index * 0.1}s` }}
@@ -389,7 +397,15 @@ export default function Home() {
               justify-items-center content-start overflow-y-auto`}
           >
             {orders
-              .filter((order) => order.status === "COMPLETED")
+              .filter((order) => {
+                if (order.status !== "COMPLETED") return false;
+                // 15 dakika kontrolü (updatedAt kullanılacak)
+                const updatedAt = new Date(order.updatedAt);
+                const now = new Date();
+                const diffMinutes =
+                  (now.getTime() - updatedAt.getTime()) / 1000 / 60;
+                return diffMinutes <= 15;
+              })
               .sort((a, b) => b.id - a.id)
               .map((order, index) => (
                 <span
