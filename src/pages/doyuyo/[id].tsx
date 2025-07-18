@@ -159,31 +159,42 @@ export default function Home() {
             alt="Logo"
             className="w-[400px] object-contain"
           />
-          <div className="relative w-full flex justify-center">
-            <img
-              src="/images/chicken.png"
-              className="w-[600px] h-auto"
-              alt="Ticket Background"
-            />
+          <div
+            className="relative w-full flex justify-center items-center"
+            style={{ minHeight: "0" }}
+          >
             <div
-              className={`absolute top-1/2 left-[540px] transform -translate-x-1/2 -translate-y-1/2
-                         text-3xl font-extrabold text-white rotate-[-7deg]
-                         ${
-                           notification.order.status === "PAYED"
-                             ? "neon-text-PAYED"
-                             : "neon-text-COMPLETED"
-                         }`}
+              className="relative flex items-center justify-center"
+              style={{ width: "clamp(300px, 40vw, 600px)", height: "auto" }}
             >
-              <div className="number-animation mb-[50px] mr-[70px] ">
-                {notification.order.number.split("").map((digit, index) => (
-                  <span
-                    key={index}
-                    className="text-2xl font-bold"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    {digit}
-                  </span>
-                ))}
+              <img
+                src="/images/chicken.png"
+                className="w-full h-auto max-w-[600px] max-h-[60vh] object-contain"
+                alt="Ticket Background"
+                style={{ display: "block" }}
+              />
+              <div
+                className={`absolute left-1/2 top-[44%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center w-[clamp(180px,18vw,340px)] h-[clamp(60px,7vw,120px)]`}
+                style={{
+                  pointerEvents: "none",
+                  zIndex: 2,
+                }}
+              >
+                {/** <div className="number-animation w-full flex justify-center items-center mb-[clamp(20px,2vw,50px)]">
+                  {notification.order.number.split("").map((digit, index) => (
+                    <span
+                      key={index}
+                      className="font-bold"
+                      style={{
+                        fontSize: "clamp(2rem, 6vw, 6rem)",
+                        animationDelay: `${index * 0.1}s`,
+                        lineHeight: 1,
+                      }}
+                    >
+                      {digit}
+                    </span>
+                  ))}
+                </div> */}
               </div>
             </div>
           </div>
@@ -230,13 +241,15 @@ export default function Home() {
       className={`${geistSans.variable} ${geistMono.variable} ${nunito.variable} 
         bg-brand-blue-primary min-h-screen h-screen w-screen overflow-hidden select-none
         flex flex-col items-center space-y-2 sm:space-y-4 p-2 sm:p-4 md:p-8 lg:p-12 
-        font-[family-name:var(--font-nunito)]`}
+        font-[family-name:var(--font-nunito)] max-w-screen-2xl mx-auto aspect-[16/9]`}
+      style={{ maxHeight: "100vh", maxWidth: "100vw" }}
     >
       <img
         src="/images/ajantavuk.png"
         alt="Arka Plan Tavuk"
-        className="absolute   inset-0 w-full h-[1200px] object-cover opacity-5 pointer-events-none select-none z-0"
+        className="absolute inset-0 w-full h-full object-cover opacity-5 pointer-events-none select-none z-0"
         draggable="false"
+        style={{ maxWidth: "100vw", maxHeight: "100vh" }}
       />
       <style jsx>{`
         @keyframes neonGlowPAYED {
@@ -326,46 +339,65 @@ export default function Home() {
         .order-card {
           backdrop-filter: blur(8px);
           transition: all 0.3s ease;
+          min-width: clamp(80px, 7vw, 140px);
+          min-height: clamp(80px, 7vw, 140px);
+          max-width: 16vw;
+          max-height: 16vw;
         }
-
-        .order-card:not(.new-order-PAYED):not(.new-order-COMPLETED):hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
-            0 4px 6px -4px rgb(0 0 0 / 0.1);
+        .order-card > span,
+        .order-card {
+          font-size: clamp(1.5rem, 3vw, 3.5rem);
+        }
+        .number-animation > span {
+          font-size: clamp(2rem, 6vw, 7rem);
+        }
+        .number-animation {
+          min-width: clamp(80px, 10vw, 200px);
+        }
+        .slide-in {
+          animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+        @keyframes slideIn {
+          0% {
+            opacity: 0;
+            transform: translateY(40px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       `}</style>
 
       <div className="w-full items-center justify-between py-2 flex flex-col slide-in">
         <img
-          className="h-20 object-contain pointer-events-none"
+          className="h-[8vw] max-h-20 object-contain pointer-events-none"
           src={"/images/colored.svg"}
           alt="Logo"
           draggable="false"
         />
       </div>
 
-      <div className="w-full h-full overflow-hidden flex flex-col  justify-between lg:flex-col gap-4 lg:gap-8">
+      <div className="w-full h-full flex flex-col justify-between gap-4 lg:gap-8">
         <div
-          className="w-full    h-1/2 flex flex-col gap-2 sm:gap-4 px-2 sm:px-4 md:px-6 lg:px-8 slide-in"
-          style={{ animationDelay: "0.2s" }}
+          className="w-full flex-1 flex flex-col gap-2 sm:gap-4 px-2 sm:px-4 md:px-6 lg:px-8 slide-in"
+          style={{ animationDelay: "0.2s", minHeight: "0" }}
         >
-          <div className="w-full border border-[#EC3B19] bg-[#EC3B19] h-1 sm:h-2"></div>
-          <span className="text-4xl sm:text-5xl lg:text-6xl text-[#EC3B19] text-center font-bold pointer-events-none">
+          <div className="w-full border border-[#EC3B19] bg-[#EC3B19] h-[0.5vw] min-h-[2px] max-h-2"></div>
+          <span className="text-[clamp(2rem,3vw,3.5rem)] text-[#EC3B19] text-center font-bold pointer-events-none">
             Hazırlanıyor
           </span>
 
           <div className="relative w-full h-full">
-            {/* Arka plan görseli */}
-
             <div
-              className={`grid w-full  mx-auto gap-4 sm:gap-6 md:gap-1 
-                auto-rows-min grid-cols-1 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 
+              className={`grid w-full mx-auto gap-4 sm:gap-6 md:gap-1 
+                auto-rows-min grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 landscape:grid-cols-6 
                 justify-items-center content-start overflow-hidden overscroll-none relative z-10`}
+              style={{ minHeight: "0" }}
             >
               {orders
                 .filter((order) => {
                   if (order.status !== "PAYED") return false;
-                  // 30 dakika kontrolü
                   const createdAt = new Date(order.createdAt);
                   const now = new Date();
                   const diffMinutes =
@@ -376,13 +408,9 @@ export default function Home() {
                 .map((order, index) => (
                   <span
                     key={order.id}
-                    className={`text-4xl sm:text-5xl lg:text-6xl xl:text-6xl
-                      font-extrabold p-1 sm:p-3 md:p-4 
-                      border-2 items-center flex justify-center 
-                      w-[120px] h-[120px] sm:w-[140px] sm:h-[110px] md:w-[130px] md:h-[100px]
-                      rounded-xl border-[#EC3B19] text-white shadow-md
-                      pointer-events-none select-none order-card slide-in
-                      ${isNewOrder(order) ? "new-order-PAYED" : ""}`}
+                    className={`order-card border-2 items-center flex justify-center rounded-xl border-[#EC3B19] text-white shadow-md pointer-events-none select-none slide-in ${
+                      isNewOrder(order) ? "new-order-PAYED" : ""
+                    }`}
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     {order.number}
@@ -393,23 +421,23 @@ export default function Home() {
         </div>
 
         <div
-          className="w-full h-1/2 flex flex-col gap-2 sm:gap-4 px-2 sm:px-4 md:px-6 lg:px-8 slide-in"
-          style={{ animationDelay: "0.4s" }}
+          className="w-full flex-1 flex flex-col gap-2 sm:gap-4 px-2 sm:px-4 md:px-6 lg:px-8 slide-in"
+          style={{ animationDelay: "0.4s", minHeight: "0" }}
         >
-          <div className="w-full border border-brand-yellow-primary bg-brand-yellow-primary h-1 sm:h-2"></div>
-          <span className="text-4xl sm:text-5xl lg:text-6xl text-brand-yellow-primary text-center font-bold pointer-events-none">
+          <div className="w-full border border-brand-yellow-primary bg-brand-yellow-primary h-[0.5vw] min-h-[2px] max-h-2"></div>
+          <span className="text-[clamp(2rem,3vw,3.5rem)] text-brand-yellow-primary text-center font-bold pointer-events-none">
             Hazırlandı
           </span>
 
           <div
-            className={`grid w-full  mx-auto gap-4 sm:gap-6 md:gap-1 
-              auto-rows-min grid-cols-1 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 
-              justify-items-center content-start overflow-y-auto`}
+            className={`grid w-full mx-auto gap-4 sm:gap-6 md:gap-1 
+              auto-rows-min grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 landscape:grid-cols-6 
+              justify-items-center content-start overflow-hidden overscroll-none relative z-10`}
+            style={{ minHeight: "0" }}
           >
             {orders
               .filter((order) => {
                 if (order.status !== "COMPLETED") return false;
-                // 15 dakika kontrolü (updatedAt kullanılacak)
                 const updatedAt = new Date(order.updatedAt);
                 const now = new Date();
                 const diffMinutes =
@@ -420,13 +448,9 @@ export default function Home() {
               .map((order, index) => (
                 <span
                   key={order.id}
-                  className={`text-4xl sm:text-5xl lg:text-6xl xl:text-6xl
-                    font-extrabold p-2 sm:p-3 md:p-4 
-                    border-2 items-center flex justify-center 
-                    w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[130px] md:h-[100px]
-                    rounded-xl border-brand-yellow-primary text-brand-yellow-primary shadow-md
-                    pointer-events-none select-none order-card slide-in
-                    ${isNewOrder(order) ? "new-order-COMPLETED" : ""}`}
+                  className={`order-card border-2 items-center flex justify-center rounded-xl border-brand-yellow-primary text-brand-yellow-primary shadow-md pointer-events-none select-none slide-in ${
+                    isNewOrder(order) ? "new-order-COMPLETED" : ""
+                  }`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {order.number}
