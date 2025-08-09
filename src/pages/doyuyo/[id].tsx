@@ -452,7 +452,7 @@ export default function Home() {
                   const now = new Date();
                   const diffMinutes =
                     (now.getTime() - createdAt.getTime()) / 1000 / 60;
-                  return diffMinutes <= 30;
+                  return diffMinutes <= 20;
                 })
                 .sort(
                   (a, b) =>
