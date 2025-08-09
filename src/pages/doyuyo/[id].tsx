@@ -49,6 +49,9 @@ export default function Home() {
   const [notificationQueue, setNotificationQueue] = useState<Order[]>([]);
   const [isPortrait, setIsPortrait] = useState<boolean>(true);
   const [isSocketConnected, setIsSocketConnected] = useState<boolean>(true);
+  const [recentlyCompletedGlow, setRecentlyCompletedGlow] = useState<
+    Record<number, boolean>
+  >({});
 
   // İlk yüklemede API'den siparişleri çek
 
@@ -61,7 +64,7 @@ export default function Home() {
       );
       if (!response.ok) throw new Error("Veriler alınırken bir hata oluştu.");
       const data: Order[] = await response.json();
-      console.log(data);
+
       // Sadece visible olanları al
       const visibleOrders = data.filter((order) => order.visible !== false);
       setOrders(visibleOrders);
@@ -149,6 +152,32 @@ export default function Home() {
     };
   }, []);
 
+  // COMPLETED'a yeni düşen siparişler için 30 sn neon border animasyonu
+  useEffect(() => {
+    if (orders.length === 0 && prevOrders.length === 0) return;
+    const newlyCompleted = orders.filter((order) => {
+      if (order.status !== "COMPLETED") return false;
+      const wasNotCompletedBefore = prevOrders.some(
+        (prev) => prev.id === order.id && prev.status !== "COMPLETED"
+      );
+      return wasNotCompletedBefore && !recentlyCompletedGlow[order.id];
+    });
+    if (newlyCompleted.length > 0) {
+      const addFlags: Record<number, boolean> = {};
+      newlyCompleted.forEach((o) => {
+        addFlags[o.id] = true;
+        setTimeout(() => {
+          setRecentlyCompletedGlow((prev) => {
+            const copy = { ...prev };
+            delete copy[o.id];
+            return copy;
+          });
+        }, 30000);
+      });
+      setRecentlyCompletedGlow((prev) => ({ ...prev, ...addFlags }));
+    }
+  }, [orders, prevOrders, recentlyCompletedGlow]);
+
   if (notification.isVisible && notification.order) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-brand-blue-primary bg-opacity-90 z-50">
@@ -224,7 +253,7 @@ export default function Home() {
                     className="font-extrabold"
                     style={{
                       animationDelay: `${index * 0.1}s`,
-                      fontSize: "clamp(3.9rem, 13vw, 13.5rem)",
+                      fontSize: "clamp(4.8rem, 16.9vw, 17.5rem)",
                     }}
                   >
                     {digit}
@@ -342,17 +371,18 @@ export default function Home() {
         .order-card {
           backdrop-filter: blur(8px);
           transition: all 0.3s ease;
-          min-width: clamp(80px, 7vw, 140px);
-          min-height: clamp(80px, 7vw, 140px);
-          max-width: 16vw;
-          max-height: 16vw;
+          font-variant-numeric: tabular-nums;
+          width: calc(4ch + clamp(12px, 1vw, 20px) * 2);
+          height: clamp(120px, 9vw, 190px);
+          box-sizing: border-box;
+          flex-shrink: 0;
         }
         .order-card > span,
         .order-card {
-          font-size: clamp(2.6rem, 5vw, 5.8rem);
+          font-size: clamp(3.2rem, 6.4vw, 7.2rem);
         }
         .number-animation > span {
-          font-size: clamp(3.4rem, 10.1vw, 11.8rem);
+          font-size: clamp(4.2rem, 12.8vw, 14.8rem);
         }
         .number-animation {
           min-width: clamp(80px, 10vw, 200px);
@@ -368,6 +398,23 @@ export default function Home() {
           100% {
             opacity: 1;
             transform: translateY(0);
+          }
+        }
+        .neon-border-completed {
+          animation: neonBorderCompleted 1.6s ease-in-out infinite;
+        }
+        @keyframes neonBorderCompleted {
+          0% {
+            box-shadow: 0 0 0px 0px rgba(250, 204, 21, 0);
+            border-color: #fbbf24; /* brand yellow 400 */
+          }
+          50% {
+            box-shadow: 0 0 28px 6px rgba(250, 204, 21, 0.8);
+            border-color: #f59e0b; /* amber-500 */
+          }
+          100% {
+            box-shadow: 0 0 0px 0px rgba(250, 204, 21, 0);
+            border-color: #fbbf24;
           }
         }
       `}</style>
@@ -393,7 +440,7 @@ export default function Home() {
 
           <div className="relative w-full h-full">
             <div
-              className={`grid w-full mx-auto gap-4 sm:gap-6 md:gap-1 
+              className={`grid w-full mx-auto gap-4 sm:gap-6 md:gap-4 
                 auto-rows-min grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 landscape:grid-cols-6 
                 justify-items-center content-start overflow-hidden overscroll-none relative z-10`}
               style={{ minHeight: "0" }}
@@ -415,7 +462,7 @@ export default function Home() {
                 .map((order, index) => (
                   <span
                     key={order.id}
-                    className={`order-card border-2 items-center flex justify-center rounded-xl border-[#EC3B19] text-white shadow-md pointer-events-none select-none slide-in font-extrabold ${
+                    className={`order-card items-center flex justify-center rounded-xl text-white border-2 border-[#EC3B19] pointer-events-none select-none slide-in font-extrabold ${
                       isNewOrder(order) ? "new-order-PAYED" : ""
                     }`}
                     style={{ animationDelay: `${index * 0.1}s` }}
@@ -454,9 +501,11 @@ export default function Home() {
               .map((order, index) => (
                 <span
                   key={order.id}
-                  className={`order-card border-2 items-center flex justify-center rounded-xl border-brand-yellow-primary text-brand-yellow-primary shadow-md pointer-events-none select-none slide-in font-extrabold ${
-                    isNewOrder(order) ? "new-order-COMPLETED" : ""
-                  }`}
+                  className={`order-card items-center flex justify-center rounded-xl text-brand-yellow-primary border-2 border-brand-yellow-primary pointer-events-none select-none slide-in font-extrabold ${
+                    recentlyCompletedGlow[order.id]
+                      ? "neon-border-completed"
+                      : ""
+                  } ${isNewOrder(order) ? "new-order-COMPLETED" : ""}`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {order.number}
