@@ -452,13 +452,14 @@ export default function Home() {
                   const now = new Date();
                   const diffMinutes =
                     (now.getTime() - createdAt.getTime()) / 1000 / 60;
-                  return diffMinutes <= 20;
+                  return diffMinutes <= 30;
                 })
                 .sort(
                   (a, b) =>
                     new Date(a.createdAt).getTime() -
                     new Date(b.createdAt).getTime()
                 )
+                .slice(0, 12)
                 .map((order, index) => (
                   <span
                     key={order.id}
@@ -498,6 +499,7 @@ export default function Home() {
                   (now.getTime() - updatedAt.getTime()) / 1000 / 60;
                 return diffMinutes <= 5;
               })
+              .slice(0, 12)
               .map((order, index) => (
                 <span
                   key={order.id}
