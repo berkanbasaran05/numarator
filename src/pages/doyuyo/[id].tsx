@@ -221,8 +221,11 @@ export default function Home() {
                 {notification.order.number.split("").map((digit, index) => (
                   <span
                     key={index}
-                    className="text-9xl font-bold"
-                    style={{ animationDelay: `${index * 0.1}s` }}
+                    className="font-extrabold"
+                    style={{
+                      animationDelay: `${index * 0.1}s`,
+                      fontSize: "clamp(3.9rem, 13vw, 13.5rem)",
+                    }}
                   >
                     {digit}
                   </span>
@@ -346,10 +349,10 @@ export default function Home() {
         }
         .order-card > span,
         .order-card {
-          font-size: clamp(1.5rem, 3vw, 3.5rem);
+          font-size: clamp(2.6rem, 5vw, 5.8rem);
         }
         .number-animation > span {
-          font-size: clamp(2rem, 6vw, 7rem);
+          font-size: clamp(3.4rem, 10.1vw, 11.8rem);
         }
         .number-animation {
           min-width: clamp(80px, 10vw, 200px);
@@ -412,7 +415,7 @@ export default function Home() {
                 .map((order, index) => (
                   <span
                     key={order.id}
-                    className={`order-card border-2 items-center flex justify-center rounded-xl border-[#EC3B19] text-white shadow-md pointer-events-none select-none slide-in ${
+                    className={`order-card border-2 items-center flex justify-center rounded-xl border-[#EC3B19] text-white shadow-md pointer-events-none select-none slide-in font-extrabold ${
                       isNewOrder(order) ? "new-order-PAYED" : ""
                     }`}
                     style={{ animationDelay: `${index * 0.1}s` }}
@@ -451,7 +454,7 @@ export default function Home() {
               .map((order, index) => (
                 <span
                   key={order.id}
-                  className={`order-card border-2 items-center flex justify-center rounded-xl border-brand-yellow-primary text-brand-yellow-primary shadow-md pointer-events-none select-none slide-in ${
+                  className={`order-card border-2 items-center flex justify-center rounded-xl border-brand-yellow-primary text-brand-yellow-primary shadow-md pointer-events-none select-none slide-in font-extrabold ${
                     isNewOrder(order) ? "new-order-COMPLETED" : ""
                   }`}
                   style={{ animationDelay: `${index * 0.1}s` }}
