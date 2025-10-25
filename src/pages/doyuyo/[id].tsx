@@ -247,7 +247,7 @@ export default function Home() {
               }`}
             >
               <span className="number-animation ml-2">
-                {notification.order.number.split("").map((digit, index) => (
+                {notification.order.number?.split("").map((digit, index) => (
                   <span
                     key={index}
                     className="font-extrabold"
@@ -258,7 +258,7 @@ export default function Home() {
                   >
                     {digit}
                   </span>
-                ))}
+                )) || notification.order.number}
               </span>
               <span className="text-3xl font-bold">Sipariş Numarası</span>
             </p>
@@ -468,7 +468,7 @@ export default function Home() {
                     }`}
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    {order.number}
+                    {order.number || "N/A"}
                   </span>
                 ))}
             </div>
@@ -510,7 +510,7 @@ export default function Home() {
                   } ${isNewOrder(order) ? "new-order-COMPLETED" : ""}`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  {order.number}
+                  {order.number || "N/A"}
                 </span>
               ))}
           </div>
