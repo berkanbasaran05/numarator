@@ -52,6 +52,7 @@ export default function Home() {
   const [recentlyCompletedGlow, setRecentlyCompletedGlow] = useState<
     Record<number, boolean>
   >({});
+  const newOrderSoundRef = useRef<HTMLAudioElement | null>(null);
 
   // İlk yüklemede API'den siparişleri çek
 
@@ -78,6 +79,16 @@ export default function Home() {
     fetchOrders();
     const interval = setInterval(fetchOrders, 5000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Yeni sipariş sesi için audio nesnesini hazırla
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!newOrderSoundRef.current) {
+      // /public/sounds/new-order.mp3 yoluna uygun bir ses dosyası koymalısın
+      newOrderSoundRef.current = new Audio("/sounds/new-order.mp3");
+      newOrderSoundRef.current.volume = 1;
+    }
   }, []);
 
   // Kuyruktan sıradaki bildirimi göster
@@ -122,6 +133,14 @@ export default function Home() {
     });
     socket.on("newOrder", (order: Order) => {
       if (order.visible === false) return;
+      // Yeni sipariş sesi sadece branchId === \"11\" ise çalsın
+      if (branchId === "11") {
+        try {
+          newOrderSoundRef.current?.play().catch(() => {
+            // Otomatik oynatma engellenirse sessizce yut
+          });
+        } catch {}
+      }
       setNotificationQueue((q) => [...q, order]);
       setPrevOrders(orders);
       setOrders((prev) => [...prev, order]);
