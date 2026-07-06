@@ -4,7 +4,6 @@ import { Nunito } from "next/font/google";
 import { io, Socket } from "socket.io-client";
 import Confetti from "react-confetti";
 
-// Fontları tanımlama
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -16,14 +15,12 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-// Nunito font tanımı
 const nunito = Nunito({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-nunito",
 });
 
-// Order tipi
 interface Order {
   createdAt: string;
   updatedAt: string;
@@ -54,44 +51,47 @@ export default function Home() {
   >({});
   const newOrderSoundRef = useRef<HTMLAudioElement | null>(null);
 
-  // İlk yüklemede API'den siparişleri çek
-
   const fetchOrders = async () => {
     try {
       const pathParts = window.location.pathname.split("/");
       const branchId = pathParts[pathParts.length - 1];
       const response = await fetch(
-        `${process.env.NEXT_APP_API_URL}/api/customerScreen/branch/${branchId}`
+        `${process.env.NEXT_APP_API_URL}/api/customerScreen/branch/${branchId}`,
       );
       if (!response.ok) throw new Error("Veriler alınırken bir hata oluştu.");
       const data: Order[] = await response.json();
 
-      // Sadece visible olanları al
       const visibleOrders = data.filter((order) => order.visible !== false);
-      setOrders(visibleOrders);
-      setPrevOrders(visibleOrders);
+      setOrders((current) => {
+        setPrevOrders(current);
+        return visibleOrders;
+      });
     } catch (error) {
-      console.error("Hata:", error);
+      console.error("[Sipariş Takip] Güncelleme başarısız:", error);
     }
   };
 
   useEffect(() => {
     fetchOrders();
-    const interval = setInterval(fetchOrders, 5000);
-    return () => clearInterval(interval);
+    const interval = setInterval(fetchOrders, 30000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchOrders();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
-  // Yeni sipariş sesi için audio nesnesini hazırla
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!newOrderSoundRef.current) {
-      // /public/sounds/new-order.mp3 yoluna uygun bir ses dosyası koymalısın
       newOrderSoundRef.current = new Audio("/sounds/new-order.mp3");
       newOrderSoundRef.current.volume = 1;
     }
   }, []);
 
-  // Kuyruktan sıradaki bildirimi göster
   useEffect(() => {
     if (!notification.isVisible && notificationQueue.length > 0) {
       const nextOrder = notificationQueue[0];
@@ -103,9 +103,7 @@ export default function Home() {
     }
   }, [notification.isVisible, notificationQueue]);
 
-  // --- SOCKET.IO ---
   useEffect(() => {
-    // URL'den branchId'yi al
     const pathParts = window.location.pathname.split("/");
     const branchId = pathParts[pathParts.length - 1];
     const key = process.env.NEXT_PUBLIC_CUSTOMERSCREEN_SOCKET_KEY;
@@ -119,6 +117,7 @@ export default function Home() {
     });
     socket.on("connect", () => {
       setIsSocketConnected(true);
+      fetchOrders();
       console.log("Müşteri ekranı socket bağlı!");
     });
     socket.on("disconnect", () => {
@@ -130,21 +129,39 @@ export default function Home() {
     });
     socket.on("reconnect", () => {
       setIsSocketConnected(true);
+      fetchOrders();
     });
     socket.on("newOrder", (order: Order) => {
       if (order.visible === false) return;
-      // Yeni sipariş sesi sadece branchId === \"11\" ise çalsın
       if (branchId === "11") {
         try {
-          newOrderSoundRef.current?.play().catch(() => {
-            // Otomatik oynatma engellenirse sessizce yut
-          });
+          newOrderSoundRef.current?.play().catch(() => {});
         } catch {}
       }
       setNotificationQueue((q) => [...q, order]);
-      setPrevOrders(orders);
-      setOrders((prev) => [...prev, order]);
+      setOrders((prev) => {
+        if (prev.some((o) => o.id === order.id)) return prev;
+        setPrevOrders(prev);
+        return [...prev, order];
+      });
       fetchOrders();
+    });
+    socket.on("orderUpdated", (order: Order) => {
+      if (order.visible === false) {
+        setOrders((prev) => {
+          setPrevOrders(prev);
+          return prev.filter((o) => o.id !== order.id);
+        });
+        return;
+      }
+      setOrders((prev) => {
+        setPrevOrders(prev);
+        const index = prev.findIndex((o) => o.id === order.id);
+        if (index === -1) return [...prev, order];
+        const next = [...prev];
+        next[index] = order;
+        return next;
+      });
     });
     return () => {
       socket.disconnect();
@@ -152,32 +169,28 @@ export default function Home() {
     // eslint-disable-next-line
   }, []);
 
-  // Yeni sipariş kontrolü (grid animasyonu için)
   const isNewOrder = (order: Order) => {
     return !prevOrders.find((prevOrder) => prevOrder.id === order.id);
   };
 
-  // Yönü Kontrol Etme
   const checkOrientation = () => {
     setIsPortrait(window.matchMedia("(orientation: portrait)").matches);
   };
 
   useEffect(() => {
-    checkOrientation(); // Yönü kontrol et
-    window.addEventListener("resize", checkOrientation); // Ekran boyutları değiştiğinde kontrol et
-
+    checkOrientation();
+    window.addEventListener("resize", checkOrientation);
     return () => {
       window.removeEventListener("resize", checkOrientation);
     };
   }, []);
 
-  // COMPLETED'a yeni düşen siparişler için 30 sn neon border animasyonu
   useEffect(() => {
     if (orders.length === 0 && prevOrders.length === 0) return;
     const newlyCompleted = orders.filter((order) => {
       if (order.status !== "COMPLETED") return false;
       const wasNotCompletedBefore = prevOrders.some(
-        (prev) => prev.id === order.id && prev.status !== "COMPLETED"
+        (prev) => prev.id === order.id && prev.status !== "COMPLETED",
       );
       return wasNotCompletedBefore && !recentlyCompletedGlow[order.id];
     });
@@ -227,23 +240,7 @@ export default function Home() {
                   pointerEvents: "none",
                   zIndex: 2,
                 }}
-              >
-                {/** <div className="number-animation w-full flex justify-center items-center mb-[clamp(20px,2vw,50px)]">
-                  {notification.order.number.split("").map((digit, index) => (
-                    <span
-                      key={index}
-                      className="font-bold"
-                      style={{
-                        fontSize: "clamp(2rem, 6vw, 6rem)",
-                        animationDelay: `${index * 0.1}s`,
-                        lineHeight: 1,
-                      }}
-                    >
-                      {digit}
-                    </span>
-                  ))}
-                </div> */}
-              </div>
+              />
             </div>
           </div>
           <div className="text-white text-center flex flex-col space-y-4">
@@ -305,20 +302,26 @@ export default function Home() {
       <style jsx>{`
         @keyframes neonGlowPAYED {
           0% {
-            text-shadow: 0 0 10px rgba(245, 158, 11, 0.7),
-              0 0 20px rgba(245, 158, 11, 0.5), 0 0 30px rgba(245, 158, 11, 0.3);
+            text-shadow:
+              0 0 10px rgba(245, 158, 11, 0.7),
+              0 0 20px rgba(245, 158, 11, 0.5),
+              0 0 30px rgba(245, 158, 11, 0.3);
             box-shadow: 0 0 0px 0px #f59e0b;
             border-color: #ec3b19;
           }
           50% {
-            text-shadow: 0 0 20px rgba(245, 158, 11, 0.9),
-              0 0 40px rgba(245, 158, 11, 0.7), 0 0 60px rgba(245, 158, 11, 0.5);
+            text-shadow:
+              0 0 20px rgba(245, 158, 11, 0.9),
+              0 0 40px rgba(245, 158, 11, 0.7),
+              0 0 60px rgba(245, 158, 11, 0.5);
             box-shadow: 0 0 32px 8px #f59e0b;
             border-color: #f59e0b;
           }
           100% {
-            text-shadow: 0 0 10px rgba(245, 158, 11, 0.7),
-              0 0 20px rgba(245, 158, 11, 0.5), 0 0 30px rgba(245, 158, 11, 0.3);
+            text-shadow:
+              0 0 10px rgba(245, 158, 11, 0.7),
+              0 0 20px rgba(245, 158, 11, 0.5),
+              0 0 30px rgba(245, 158, 11, 0.3);
             box-shadow: 0 0 0px 0px #f59e0b;
             border-color: #ec3b19;
           }
@@ -326,20 +329,26 @@ export default function Home() {
 
         @keyframes neonGlowCOMPLETED {
           0% {
-            text-shadow: 0 0 10px rgba(16, 185, 129, 0.7),
-              0 0 20px rgba(16, 185, 129, 0.5), 0 0 30px rgba(16, 185, 129, 0.3);
+            text-shadow:
+              0 0 10px rgba(16, 185, 129, 0.7),
+              0 0 20px rgba(16, 185, 129, 0.5),
+              0 0 30px rgba(16, 185, 129, 0.3);
             box-shadow: 0 0 0px 0px #10b981;
             border-color: #10b981;
           }
           50% {
-            text-shadow: 0 0 20px rgba(16, 185, 129, 0.9),
-              0 0 40px rgba(16, 185, 129, 0.7), 0 0 60px rgba(16, 185, 129, 0.5);
+            text-shadow:
+              0 0 20px rgba(16, 185, 129, 0.9),
+              0 0 40px rgba(16, 185, 129, 0.7),
+              0 0 60px rgba(16, 185, 129, 0.5);
             box-shadow: 0 0 32px 8px #10b981;
             border-color: #10b981;
           }
           100% {
-            text-shadow: 0 0 10px rgba(16, 185, 129, 0.7),
-              0 0 20px rgba(16, 185, 129, 0.5), 0 0 30px rgba(16, 185, 129, 0.3);
+            text-shadow:
+              0 0 10px rgba(16, 185, 129, 0.7),
+              0 0 20px rgba(16, 185, 129, 0.5),
+              0 0 30px rgba(16, 185, 129, 0.3);
             box-shadow: 0 0 0px 0px #10b981;
             border-color: #10b981;
           }
@@ -425,11 +434,11 @@ export default function Home() {
         @keyframes neonBorderCompleted {
           0% {
             box-shadow: 0 0 0px 0px rgba(250, 204, 21, 0);
-            border-color: #fbbf24; /* brand yellow 400 */
+            border-color: #fbbf24;
           }
           50% {
             box-shadow: 0 0 28px 6px rgba(250, 204, 21, 0.8);
-            border-color: #f59e0b; /* amber-500 */
+            border-color: #f59e0b;
           }
           100% {
             box-shadow: 0 0 0px 0px rgba(250, 204, 21, 0);
@@ -476,7 +485,7 @@ export default function Home() {
                 .sort(
                   (a, b) =>
                     new Date(a.createdAt).getTime() -
-                    new Date(b.createdAt).getTime()
+                    new Date(b.createdAt).getTime(),
                 )
                 .slice(0, 12)
                 .map((order, index) => (
