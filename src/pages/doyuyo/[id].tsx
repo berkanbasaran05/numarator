@@ -400,14 +400,14 @@ export default function Home() {
           backdrop-filter: blur(8px);
           transition: all 0.3s ease;
           font-variant-numeric: tabular-nums;
-          width: calc(4ch + clamp(12px, 1vw, 20px) * 2);
+          width: calc(4ch + clamp(12px, 1vw, 20px) * 4);
           height: clamp(120px, 9vw, 190px);
           box-sizing: border-box;
           flex-shrink: 0;
         }
         .order-card > span,
         .order-card {
-          font-size: clamp(3.2rem, 6.4vw, 7.2rem);
+          font-size: 76px;
         }
         .number-animation > span {
           font-size: clamp(4.2rem, 12.8vw, 14.8rem);
@@ -429,20 +429,17 @@ export default function Home() {
           }
         }
         .neon-border-completed {
-          animation: neonBorderCompleted 1.6s ease-in-out infinite;
+          z-index: 20;
+          transition: none;
+          animation: readyPulse 1.15s ease-in-out infinite;
         }
-        @keyframes neonBorderCompleted {
-          0% {
-            box-shadow: 0 0 0px 0px rgba(250, 204, 21, 0);
-            border-color: #fbbf24;
+        @keyframes readyPulse {
+          0%,
+          100% {
+            transform: scale(1);
           }
           50% {
-            box-shadow: 0 0 28px 6px rgba(250, 204, 21, 0.8);
-            border-color: #f59e0b;
-          }
-          100% {
-            box-shadow: 0 0 0px 0px rgba(250, 204, 21, 0);
-            border-color: #fbbf24;
+            transform: scale(1.18);
           }
         }
       `}</style>
@@ -462,13 +459,13 @@ export default function Home() {
           style={{ animationDelay: "0.2s", minHeight: "0" }}
         >
           <div className="w-full border border-[#EC3B19] bg-[#EC3B19] h-[0.5vw] min-h-[2px] max-h-2"></div>
-          <span className="text-[clamp(2rem,3vw,3.5rem)] text-[#EC3B19] text-center font-bold pointer-events-none">
-            Hazırlanıyor
+          <span className="text-[60px] text-[#EC3B19] text-center font-bold pointer-events-none">
+            Siparişiniz Hazırlanıyor
           </span>
 
           <div className="relative w-full h-full">
             <div
-              className={`grid w-full mx-auto gap-4 sm:gap-6 md:gap-4 
+              className={`grid w-full  mx-auto gap-4 sm:gap-6 md:gap-4 
                 auto-rows-min grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 landscape:grid-cols-6 
                 justify-items-center content-start overflow-hidden overscroll-none relative z-10`}
               style={{ minHeight: "0" }}
@@ -491,7 +488,7 @@ export default function Home() {
                 .map((order, index) => (
                   <span
                     key={order.id}
-                    className={`order-card items-center flex justify-center rounded-xl text-white border-2 border-[#EC3B19] pointer-events-none select-none slide-in font-extrabold ${
+                    className={` w-64 h-24 text-5xl items-center  flex justify-center rounded-xl text-black border-[5px] bg-brand-red-primary  border-black pointer-events-none select-none slide-in  font-extrabold ${
                       isNewOrder(order) ? "new-order-PAYED" : ""
                     }`}
                     style={{ animationDelay: `${index * 0.1}s` }}
@@ -508,14 +505,14 @@ export default function Home() {
           style={{ animationDelay: "0.4s", minHeight: "0" }}
         >
           <div className="w-full border border-brand-yellow-primary bg-brand-yellow-primary h-[0.5vw] min-h-[2px] max-h-2"></div>
-          <span className="text-[clamp(2rem,3vw,3.5rem)] text-brand-yellow-primary text-center font-bold pointer-events-none">
-            Hazırlandı
+          <span className="text-[60px] text-brand-yellow-primary text-center font-bold pointer-events-none">
+            Siparişiniz Hazır ! Afiyet Olsun
           </span>
 
           <div
             className={`grid w-full mx-auto gap-4 sm:gap-6 md:gap-1 
               auto-rows-min grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 landscape:grid-cols-6 
-              justify-items-center content-start overflow-hidden overscroll-none relative z-10`}
+              justify-items-center content-start overflow-visible overscroll-none relative z-10`}
             style={{ minHeight: "0" }}
           >
             {orders
@@ -531,11 +528,12 @@ export default function Home() {
               .map((order, index) => (
                 <span
                   key={order.id}
-                  className={`order-card items-center flex justify-center rounded-xl text-brand-yellow-primary border-2 border-brand-yellow-primary pointer-events-none select-none slide-in font-extrabold ${
-                    recentlyCompletedGlow[order.id]
-                      ? "neon-border-completed"
-                      : ""
-                  } ${isNewOrder(order) ? "new-order-COMPLETED" : ""}`}
+                  className={`order-card items-center flex justify-center rounded-xl text-white
+                      bg-orange-500 border-[5px] border-black pointer-events-none select-none font-extrabold ${
+                        recentlyCompletedGlow[order.id]
+                          ? "neon-border-completed"
+                          : "slide-in"
+                      } ${isNewOrder(order) && !recentlyCompletedGlow[order.id] ? "new-order-COMPLETED" : ""}`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {order.number || "N/A"}
