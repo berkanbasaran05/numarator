@@ -465,10 +465,12 @@ export default function Home() {
 
           <div className="relative w-full h-full">
             <div
-              className={`grid w-full  mx-auto gap-4 sm:gap-6 md:gap-4 
-                auto-rows-min grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 landscape:grid-cols-6 
-                justify-items-center content-start overflow-hidden overscroll-none relative z-10`}
-              style={{ minHeight: "0" }}
+              className="grid w-full mx-auto gap-4 auto-rows-min content-start overflow-hidden overscroll-none relative z-10"
+              style={{
+                minHeight: "0",
+                gridTemplateColumns:
+                  "repeat(auto-fill, minmax(min(100%, 16rem), 1fr))",
+              }}
             >
               {orders
                 .filter((order) => {
@@ -488,7 +490,7 @@ export default function Home() {
                 .map((order, index) => (
                   <span
                     key={order.id}
-                    className={` w-64 h-24 text-5xl items-center  flex justify-center rounded-xl text-black border-[5px] bg-brand-red-primary  border-black pointer-events-none select-none slide-in  font-extrabold ${
+                    className={`w-full min-w-0 max-w-full h-40 px-4 text-7xl items-center flex justify-center rounded-xl text-black border-[5px] bg-brand-red-primary border-black pointer-events-none select-none slide-in font-extrabold box-border ${
                       isNewOrder(order) ? "new-order-PAYED" : ""
                     }`}
                     style={{ animationDelay: `${index * 0.1}s` }}
