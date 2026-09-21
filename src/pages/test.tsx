@@ -5,12 +5,12 @@ import { io, Socket } from "socket.io-client";
 import Confetti from "react-confetti";
 
 const geistSans = localFont({
-  src: "public/fonts/GeistVF.woff",
+  src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
 });
 const geistMono = localFont({
-  src: "../fonts/GeistMonoVF.woff",
+  src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
   weight: "100 900",
 });
