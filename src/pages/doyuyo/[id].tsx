@@ -46,43 +46,150 @@ export default function Home() {
   const [notificationQueue, setNotificationQueue] = useState<Order[]>([]);
   const [isPortrait, setIsPortrait] = useState<boolean>(true);
   const [isSocketConnected, setIsSocketConnected] = useState<boolean>(true);
+  const [isOnline, setIsOnline] = useState<boolean>(true);
   const [recentlyCompletedGlow, setRecentlyCompletedGlow] = useState<
     Record<number, boolean>
   >({});
   const newOrderSoundRef = useRef<HTMLAudioElement | null>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const isOnlineRef = useRef(true);
+  const inFlightRef = useRef(false);
+  const mountedRef = useRef(true);
+  const fetchOrdersRef = useRef<() => Promise<boolean>>(async () => false);
 
-  const fetchOrders = async () => {
+  const setOnlineStatus = (online: boolean) => {
+    if (isOnlineRef.current === online) return;
+    isOnlineRef.current = online;
+    if (mountedRef.current) setIsOnline(online);
+  };
+
+  const fetchOrders = async (): Promise<boolean> => {
+    if (inFlightRef.current) return isOnlineRef.current;
+    inFlightRef.current = true;
+
+    const controller = new AbortController();
+    let timedOut = false;
+    const timeoutId = window.setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, 8000);
+
     try {
       const pathParts = window.location.pathname.split("/");
       const branchId = pathParts[pathParts.length - 1];
       const response = await fetch(
         `${process.env.NEXT_APP_API_URL}/api/customerScreen/branch/${branchId}`,
+        {
+          cache: "no-store",
+          signal: controller.signal,
+          headers: { "Cache-Control": "no-cache" },
+        },
       );
       if (!response.ok) throw new Error("Veriler alınırken bir hata oluştu.");
       const data: Order[] = await response.json();
 
       const visibleOrders = data.filter((order) => order.visible !== false);
+      const wasOffline = !isOnlineRef.current;
+      setOnlineStatus(true);
       setOrders((current) => {
         setPrevOrders(current);
         return visibleOrders;
       });
+
+      if (wasOffline && socketRef.current && !socketRef.current.connected) {
+        socketRef.current.connect();
+      }
+
+      return true;
     } catch (error) {
-      console.error("[Sipariş Takip] Güncelleme başarısız:", error);
+      const isAbort =
+        error instanceof DOMException && error.name === "AbortError";
+      if (isAbort && !timedOut) return false;
+
+      const isNetworkError =
+        timedOut ||
+        error instanceof TypeError ||
+        (error instanceof Error &&
+          /failed to fetch|network|load failed/i.test(error.message));
+
+      if (isNetworkError) {
+        setOnlineStatus(false);
+      }
+
+      console.warn(
+        "[Sipariş Takip] Güncelleme başarısız:",
+        error instanceof Error ? error.message : String(error),
+      );
+      return false;
+    } finally {
+      window.clearTimeout(timeoutId);
+      inFlightRef.current = false;
     }
   };
 
+  fetchOrdersRef.current = fetchOrders;
+
   useEffect(() => {
-    fetchOrders();
-    const interval = setInterval(fetchOrders, 30000);
-    const onVisible = () => {
-      if (document.visibilityState === "visible") fetchOrders();
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
     };
+  }, []);
+
+  useEffect(() => {
+    fetchOrdersRef.current();
+
+    const interval = window.setInterval(() => {
+      if (isOnlineRef.current) fetchOrdersRef.current();
+    }, 30000);
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchOrdersRef.current();
+    };
+
     document.addEventListener("visibilitychange", onVisible);
     return () => {
-      clearInterval(interval);
+      window.clearInterval(interval);
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
+
+  useEffect(() => {
+    const onOnline = () => {
+      fetchOrdersRef.current().then((ok) => {
+        if (ok && socketRef.current && !socketRef.current.connected) {
+          socketRef.current.connect();
+        }
+      });
+    };
+
+    const onOffline = () => {
+      setOnlineStatus(false);
+    };
+
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      onOffline();
+    }
+
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isOnline) return;
+
+    fetchOrdersRef.current();
+    const retry = window.setInterval(() => {
+      fetchOrdersRef.current();
+    }, 3000);
+
+    return () => window.clearInterval(retry);
+  }, [isOnline]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -110,14 +217,17 @@ export default function Home() {
     if (!branchId || !key) return;
     const socket: Socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!, {
       auth: { branchId, key },
-      transports: ["websocket"],
+      transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: Infinity,
-      reconnectionDelay: 2000,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
     });
+    socketRef.current = socket;
     socket.on("connect", () => {
       setIsSocketConnected(true);
-      fetchOrders();
+      fetchOrdersRef.current();
       console.log("Müşteri ekranı socket bağlı!");
     });
     socket.on("disconnect", () => {
@@ -129,7 +239,7 @@ export default function Home() {
     });
     socket.on("reconnect", () => {
       setIsSocketConnected(true);
-      fetchOrders();
+      fetchOrdersRef.current();
     });
     socket.on("newOrder", (order: Order) => {
       if (order.visible === false) return;
@@ -144,7 +254,7 @@ export default function Home() {
         setPrevOrders(prev);
         return [...prev, order];
       });
-      fetchOrders();
+      fetchOrdersRef.current();
     });
     socket.on("orderUpdated", (order: Order) => {
       if (order.visible === false) {
@@ -164,6 +274,7 @@ export default function Home() {
       });
     });
     return () => {
+      socketRef.current = null;
       socket.disconnect();
     };
     // eslint-disable-next-line
@@ -172,6 +283,16 @@ export default function Home() {
   const isNewOrder = (order: Order) => {
     return !prevOrders.find((prevOrder) => prevOrder.id === order.id);
   };
+
+  const connectionBanner = !isOnline ? (
+    <div className="fixed top-0 left-0 w-full bg-red-600 text-white text-center py-2 z-[100] font-bold animate-pulse">
+      İnternet bağlantısı yok. Bağlantı kontrol ediliyor...
+    </div>
+  ) : !isSocketConnected ? (
+    <div className="fixed top-0 left-0 w-full bg-red-600 text-white text-center py-2 z-[100] font-bold animate-pulse">
+      Sunucu ile bağlantı kurulamadı. Tekrar bağlanıyor...
+    </div>
+  ) : null;
 
   const checkOrientation = () => {
     setIsPortrait(window.matchMedia("(orientation: portrait)").matches);
@@ -213,6 +334,7 @@ export default function Home() {
   if (notification.isVisible && notification.order) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-brand-blue-primary bg-opacity-90 z-50">
+        {connectionBanner}
         {notification.order.status === "PAYED" && <Confetti />}
         <div className="relative w-[800px] flex flex-col items-center space-y-8">
           <img
@@ -545,11 +667,7 @@ export default function Home() {
         </div>
       </div>
 
-      {!isSocketConnected && (
-        <div className="fixed top-0 left-0 w-full bg-red-600 text-white text-center py-2 z-[100] font-bold animate-pulse">
-          Sunucu ile bağlantı kurulamadı. Tekrar bağlanıyor...
-        </div>
-      )}
+      {connectionBanner}
     </div>
   );
 }
