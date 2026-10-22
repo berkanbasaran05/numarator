@@ -391,12 +391,7 @@ export default function YuzBurger() {
     )
     .slice(0, MAX_TILES);
 
-  const grid = (
-    list: Order[],
-    top: number,
-    tileBg: string,
-    tileFg: string,
-  ) => (
+  const grid = (list: Order[], top: number, tileBg: string, tileFg: string) => (
     <div
       className="absolute grid"
       style={{
@@ -485,7 +480,12 @@ export default function YuzBurger() {
 
         <div className="absolute" style={stageStyle(CREAM)}>
           <Watermark color="#E9E7E0" />
-          <Logo width={340} ink={DARK} one={YELLOW} style={{ left: 130, top: 390 }} />
+          <Logo
+            width={340}
+            ink={DARK}
+            one={YELLOW}
+            style={{ left: 130, top: 390 }}
+          />
 
           {sectionTitle("Siparişiniz Hazırlanıyor", 124)}
           {grid(preparingOrders, 238, YELLOW, DARK)}
