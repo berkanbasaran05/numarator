@@ -406,7 +406,7 @@ export default function YuzBurger() {
       {list.map((order, index) => (
         <div
           key={order.id}
-          className="tile flex items-center justify-center tabular-nums"
+          className="tile flex items-center justify-center tabular-nums "
           style={{
             height: 115,
             borderRadius: 12,
