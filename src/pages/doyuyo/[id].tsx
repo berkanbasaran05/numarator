@@ -47,10 +47,12 @@ export default function Home() {
   const [isPortrait, setIsPortrait] = useState<boolean>(true);
   const [isSocketConnected, setIsSocketConnected] = useState<boolean>(true);
   const [isOnline, setIsOnline] = useState<boolean>(true);
+  const [isCampaignVisible, setIsCampaignVisible] = useState<boolean>(false);
   const [recentlyCompletedGlow, setRecentlyCompletedGlow] = useState<
     Record<number, boolean>
   >({});
   const newOrderSoundRef = useRef<HTMLAudioElement | null>(null);
+  const notificationVisibleRef = useRef(false);
   const socketRef = useRef<Socket | null>(null);
   const isOnlineRef = useRef(true);
   const inFlightRef = useRef(false);
@@ -197,6 +199,33 @@ export default function Home() {
       newOrderSoundRef.current = new Audio("/sounds/new-order.mp3");
       newOrderSoundRef.current.volume = 1;
     }
+  }, []);
+
+  notificationVisibleRef.current = notification.isVisible;
+
+  useEffect(() => {
+    if (notification.isVisible) setIsCampaignVisible(false);
+  }, [notification.isVisible]);
+
+  useEffect(() => {
+    const pathParts = window.location.pathname.split("/");
+    const branchId = pathParts[pathParts.length - 1];
+    if (branchId !== "111") return;
+
+    let hideTimer: number | undefined;
+    const interval = window.setInterval(() => {
+      if (notificationVisibleRef.current) return;
+      setIsCampaignVisible(true);
+      window.clearTimeout(hideTimer);
+      hideTimer = window.setTimeout(() => {
+        setIsCampaignVisible(false);
+      }, 5000);
+    }, 30000);
+
+    return () => {
+      window.clearInterval(interval);
+      window.clearTimeout(hideTimer);
+    };
   }, []);
 
   useEffect(() => {
@@ -666,6 +695,17 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {isCampaignVisible && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-[#cfe6e2]">
+          <img
+            src="/images/campaign.jpeg"
+            alt="Kampanya"
+            className="h-full w-full object-contain pointer-events-none select-none"
+            draggable={false}
+          />
+        </div>
+      )}
 
       {connectionBanner}
     </div>
