@@ -219,8 +219,8 @@ export default function Home() {
       window.clearTimeout(hideTimer);
       hideTimer = window.setTimeout(() => {
         setIsCampaignVisible(false);
-      }, 5000);
-    }, 30000);
+      }, 10000);
+    }, 20000);
 
     return () => {
       window.clearInterval(interval);
